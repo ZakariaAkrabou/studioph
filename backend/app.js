@@ -1,15 +1,19 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const connectDB = require("./config/database");
-const dotenv = require("dotenv");
 const userRoutes = require("./routes/userRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+
 
 const app = express();
-dotenv.config();
 
 app.use(bodyParser.json());
 
 app.use("/auth", userRoutes);
+app.use("/category", categoryRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
