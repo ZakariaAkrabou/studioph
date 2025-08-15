@@ -4,30 +4,31 @@ const portfolioSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    unique: true,
   },
   description: {
     type: String,
-    trim: true
+    trim: true,
   },
   imageUrl: {
     type: String,
-    required: true
+    required: true,
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
-    required: true
+    required: true,
   },
   photographer: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true
+    ref: "Admin",
+    required: true,
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model("Portfolio", portfolioSchema);
