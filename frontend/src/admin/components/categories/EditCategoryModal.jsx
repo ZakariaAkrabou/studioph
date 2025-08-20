@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export default function EditCategoryModal({ isOpen, onClose, category, onSave }) {
   const [formData, setFormData] = useState({ name: '', description: '', image: null });
@@ -34,7 +35,25 @@ export default function EditCategoryModal({ isOpen, onClose, category, onSave })
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    
+    // Validate that at least one field has changed
+    const hasChanges = 
+      formData.name !== category.name ||
+      formData.description !== category.description ||
+      formData.image !== null;
+    
+    if (!hasChanges) {
+      toast.error("No changes detected");
+      return;
+    }
+    
+    // Only send fields that have changed
+    const updatedData = {};
+    if (formData.name !== category.name) updatedData.name = formData.name;
+    if (formData.description !== category.description) updatedData.description = formData.description;
+    if (formData.image !== null) updatedData.image = formData.image;
+    
+    onSave(updatedData);
   };
 
   return (
@@ -62,7 +81,7 @@ export default function EditCategoryModal({ isOpen, onClose, category, onSave })
                 </div>
               </div>
               <div className="flex-grow flex flex-col">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Change Image</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Change Image (Optional)</label>
                 <div className="mt-1 flex-grow flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-400 transition-colors">
                   <div className="space-y-1 text-center">
                     <svg className="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">

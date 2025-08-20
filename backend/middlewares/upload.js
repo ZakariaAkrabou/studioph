@@ -9,7 +9,10 @@ exports.singleUpload = (fieldName, folder) => [
   upload.single(fieldName),
   async (req, res, next) => {
     try {
-      if (!req.file) return next(new Error("No file uploaded"));
+      if (!req.file) {
+        // No file uploaded, continue without image processing
+        return next();
+      }
 
       const result = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(

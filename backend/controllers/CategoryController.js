@@ -69,8 +69,12 @@ exports.updateCategory = async (req, res, next) => {
     }
 
     const { name, description } = req.body;
-    if (name) category.name = name;
-    if (description) category.description = description;
+    
+    // Only update fields that are provided
+    if (name !== undefined) category.name = name;
+    if (description !== undefined) category.description = description;
+    
+    // Only update image if a new file is uploaded
     if (req.file && req.file.cloudinaryUrl) {
       category.image = req.file.cloudinaryUrl;
     }

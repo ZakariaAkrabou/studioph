@@ -6,12 +6,13 @@ const sendEmail = require('../utils/sendEmail');
 
 exports.registerAdmin = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const admin = new Admin({ email, password });
+        const { name, email, password } = req.body;
+        const admin = new Admin({ name, email, password });
         const verificationToken = admin.generateVerificationToken();
         await admin.save();
 
-        const verifyUrl = `${process.env.BASE_URL}/admin/verify/${verificationToken}`;
+        const frontendBase = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173').trim();
+        const verifyUrl = `${frontendBase.replace(/\/+$/, '')}/auth/verify/${verificationToken}`;
         await sendEmail(email, "Verify Your Admin Account", `<p>Click here to verify: <a href="${verifyUrl}">${verifyUrl}</a></p>`);
 
         res.json({ message: "Verification email sent" });
@@ -47,13 +48,36 @@ exports.loginAdmin = async (req, res) => {
             return res.status(403).json({ message: 'Please verify your email first' });
         }
         const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.json({ token });
+        res.json({ 
+            token,
+            user: {
+                id: admin._id,
+                email: admin.email,
+                isVerified: admin.isVerified
+            }
+        });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
 };
 
-
+// Add check auth endpoint
+exports.checkAuth = async (req, res) => {
+    try {
+        // This middleware will only run if protectAdmin passes
+        // So if we reach here, the token is valid
+        res.json({ 
+            isValid: true,
+            user: {
+                id: req.admin._id,
+                email: req.admin.email,
+                isVerified: req.admin.isVerified
+            }
+        });
+    } catch (err) {
+        res.status(401).json({ message: 'Invalid token' });
+    }
+};
 
 exports.forgotPassword = async (req, res) => {
     try {
@@ -63,7 +87,8 @@ exports.forgotPassword = async (req, res) => {
         const resetToken = admin.generatePasswordResetToken();
         await admin.save();
 
-        const resetUrl = `${process.env.BASE_URL}/admin/reset-password/${resetToken}`;
+        const frontendBase = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173').trim();
+        const resetUrl = `${frontendBase.replace(/\/+$/, '')}/auth/reset-password/${resetToken}`;
         await sendEmail(admin.email, "Password Reset", `<p>Click to reset password: <a href="${resetUrl}">${resetUrl}</a></p>`);
 
         res.json({ message: "Password reset email sent" });
