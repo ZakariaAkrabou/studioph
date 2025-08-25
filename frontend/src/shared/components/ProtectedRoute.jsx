@@ -6,12 +6,10 @@ const ProtectedRoute = ({ children, fallback = '/auth/login' }) => {
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const location = useLocation();
 
-  // If no token, redirect to login
   if (!token) {
     return <Navigate to={fallback} state={{ from: location }} replace />;
   }
 
-  // Check if token is valid
   const { data, error, isLoading } = useCheckAuthQuery(undefined, {
     skip: !token,
   });
@@ -27,7 +25,6 @@ const ProtectedRoute = ({ children, fallback = '/auth/login' }) => {
     );
   }
 
-  // If token is invalid or expired, redirect to login
   if (error || !isAuthenticated) {
     return <Navigate to={fallback} state={{ from: location }} replace />;
   }

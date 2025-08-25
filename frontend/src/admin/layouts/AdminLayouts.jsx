@@ -18,7 +18,7 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 p-3 md:p-4 bg-white">
-          {/* Page content */}
+        
           <Outlet />
         </main>
       </div>

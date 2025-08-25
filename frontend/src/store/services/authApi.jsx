@@ -7,7 +7,7 @@ export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
     baseUrl,
-    credentials: 'include', // Include cookies in requests
+    credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
       const token = getState()?.auth?.token || getCookie('auth_token');
       if (token) {
@@ -25,7 +25,6 @@ export const authApi = createApi({
         body: { email, password },
       }),
       transformResponse: (response) => {
-        // Transform the response to include user info if available
         return {
           token: response.token,
           user: response.user || { email: response.email || 'Admin' }
@@ -65,7 +64,6 @@ export const authApi = createApi({
         method: 'GET',
       }),
     }),
-    // Add a check auth endpoint to verify token validity
     checkAuth: builder.query({
       query: () => ({
         url: '/auth/check',

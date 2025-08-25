@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { singleUpload } = require("../middlewares/upload");
-const categoryController = require("../controllers/categoryController");
+const categoryController = require("../controllers/CategoryController");
 const { protectAdmin } = require("../middlewares/authMiddleware");
 
 router.post("/create", protectAdmin, singleUpload("image", "categories"), categoryController.createCategory);

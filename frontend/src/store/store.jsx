@@ -2,16 +2,20 @@ import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { authApi } from './services/authApi.jsx';
 import { categoryApi } from './services/categoryApi.jsx';
+import { portfolioApi } from './services/portfolioApi.jsx';
+import { clientSpaceApi } from './services/clientSpaceApi.jsx';
 import authReducer from './slices/authSlice.jsx';
 
 export const store = configureStore({
   reducer: {
     [authApi.reducerPath]: authApi.reducer,
     [categoryApi.reducerPath]: categoryApi.reducer,
+    [portfolioApi.reducerPath]: portfolioApi.reducer,
+    [clientSpaceApi.reducerPath]: clientSpaceApi.reducer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApi.middleware, categoryApi.middleware),
+    getDefaultMiddleware().concat(authApi.middleware, categoryApi.middleware, portfolioApi.middleware, clientSpaceApi.middleware),
 });
 
 setupListeners(store.dispatch);

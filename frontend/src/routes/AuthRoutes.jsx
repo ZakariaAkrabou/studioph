@@ -1,4 +1,3 @@
-// src/routes/AuthRoutes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Login from "../admin/pages/auth/Login";
@@ -10,7 +9,6 @@ import VerifyEmail from "../admin/pages/auth/VerifyEmail";
 export default function AuthRoutes() {
   const { isAuthenticated } = useSelector((state) => state.auth);
 
-  // If user is already authenticated, redirect to admin dashboard
   if (isAuthenticated) {
     return <Navigate to="/admin" replace />;
   }

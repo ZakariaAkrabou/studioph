@@ -35,10 +35,8 @@ const Login = () => {
     try {
       const result = await login({ email: formData.email, password: formData.password }).unwrap();
       
-      // Set credentials in Redux store (this will also set cookies)
       dispatch(setCredentials(result));
       
-      // Navigate to the intended destination or admin dashboard
       navigate(from, { replace: true });
     } catch (err) {
       const msg = err?.data?.message || err?.error || 'Login failed';

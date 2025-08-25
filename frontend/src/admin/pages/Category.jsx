@@ -174,14 +174,14 @@ export default function CategoryPage() {
                       <div className="flex items-center gap-2 mt-1">
                         <button 
                           onClick={() => handleOpenModal(category)} 
-                          className="text-xs text-blue-600 hover:underline"
+                          className="cursor-pointer text-xs text-blue-600 hover:underline"
                         >
                           Edit
                         </button>
                         <button 
                           onClick={() => handleDelete(category._id)} 
                           disabled={isDeleting}
-                          className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                          className="cursor-pointer text-xs text-red-600 hover:underline disabled:opacity-50"
                         >
                           {isDeleting ? 'Deleting...' : 'Delete'}
                         </button>

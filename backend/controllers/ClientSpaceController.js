@@ -150,3 +150,54 @@ exports.deleteSpace = async (req, res) => {
   await space.deleteOne();
   res.status(200).json({  message: "Space deleted" });
 };
+
+// Remove a single image by index from a client space (does not delete from Cloudinary)
+exports.removeImage = async (req, res) => {
+  try {
+    const space = await ClientSpace.findById(req.params.id);
+    if (!space) return res.status(404).json({ message: "Space not found" });
+    if (!space.admin.equals(req.admin._id))
+      return res.status(403).json({ message: "Not authorized" });
+
+    const index = parseInt(req.query.index, 10);
+    if (Number.isNaN(index) || index < 0 || index >= space.images.length) {
+      return res.status(400).json({ message: "Invalid image index" });
+    }
+
+    space.images.splice(index, 1);
+    await space.save();
+    res.status(200).json({ success: true, images: space.images });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error removing image", error: err.message });
+  }
+};
+
+// Replace a single image by index with a newly uploaded image
+exports.replaceImage = async (req, res) => {
+  try {
+    const space = await ClientSpace.findById(req.params.id);
+    if (!space) return res.status(404).json({ message: "Space not found" });
+    if (!space.admin.equals(req.admin._id))
+      return res.status(403).json({ message: "Not authorized" });
+
+    const index = parseInt(req.params.index, 10);
+    if (Number.isNaN(index) || index < 0 || index >= space.images.length) {
+      return res.status(400).json({ message: "Invalid image index" });
+    }
+
+    if (!req.file) return res.status(400).json({ message: "No image provided" });
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: `space_images/${space._id}`,
+    });
+
+    space.images[index] = result.secure_url;
+    await space.save();
+
+    res.status(200).json({ success: true, images: space.images });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error replacing image", error: error.message });
+  }
+};

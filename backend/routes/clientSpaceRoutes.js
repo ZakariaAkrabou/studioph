@@ -13,5 +13,9 @@ router.get("/all-space", protectAdmin, ClientSpaceController.getAllSpaces);
 router.put("/update/:id", protectAdmin, ClientSpaceController.updateSpace);
 router.delete("/delete/:id", protectAdmin, ClientSpaceController.deleteSpace);
 
+// Manage individual images
+router.delete("/:id/image", protectAdmin, ClientSpaceController.removeImage);
+router.put("/:id/image/:index", protectAdmin, upload.single("image"), ClientSpaceController.replaceImage);
+
 
 module.exports = router;

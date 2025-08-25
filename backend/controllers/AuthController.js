@@ -61,11 +61,9 @@ exports.loginAdmin = async (req, res) => {
     }
 };
 
-// Add check auth endpoint
 exports.checkAuth = async (req, res) => {
     try {
-        // This middleware will only run if protectAdmin passes
-        // So if we reach here, the token is valid
+       
         res.json({ 
             isValid: true,
             user: {

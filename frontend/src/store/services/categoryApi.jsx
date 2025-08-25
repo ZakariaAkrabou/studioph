@@ -9,7 +9,6 @@ export const categoryApi = createApi({
     prepareHeaders: (headers, { getState, endpoint, type }) => {
       const token = getState()?.auth?.token;
       if (token) headers.set('authorization', `Bearer ${token}`);
-      // Do not set JSON content-type here; we send FormData for create/update
       return headers;
     },
   }),
@@ -31,7 +30,6 @@ export const categoryApi = createApi({
         const form = new FormData();
         form.append('name', name);
         if (description) form.append('description', description);
-        // Backend upload middleware requires a file
         if (image) form.append('image', image);
         return {
           url: '/category/create',

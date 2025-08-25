@@ -130,3 +130,30 @@ exports.deletePortfolio = async (req, res) => {
       .json({ message: "Something went wrong", error: err.message });
   }
 };
+
+// Update portfolio item
+exports.updatePortfolio = async (req, res) => {
+  try {
+    const portfolio = await Portfolio.findById(req.params.id);
+    if (!portfolio) {
+      return res.status(404).json({ success: false, message: "Portfolio item not found" });
+    }
+
+    // Authorization: allow any authenticated admin to update
+
+    const { title, description, category } = req.body || {};
+    if (title) portfolio.title = title;
+    if (description) portfolio.description = description;
+    if (category) portfolio.category = category;
+    if (req.file && req.file.cloudinaryUrl) {
+      portfolio.imageUrl = req.file.cloudinaryUrl;
+    }
+
+    await portfolio.save();
+
+    res.status(200).json({ success: true, message: "Portfolio item updated", data: portfolio });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Something went wrong", error: err.message });
+  }
+};

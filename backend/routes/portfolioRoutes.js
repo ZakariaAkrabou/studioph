@@ -10,7 +10,8 @@ router.get("/image/:id", portfolioController.getPortfolioById);
 
 
 //private
-router.post("/create",protectAdmin,singleUpload("image", "portfolio"), portfolioController.createPortfolio);
+router.post("/create", protectAdmin, singleUpload("image", "portfolio"), portfolioController.createPortfolio);
+router.put("/update/:id", protectAdmin, singleUpload("image", "portfolio"), portfolioController.updatePortfolio);
 router.delete("/delete/:id", protectAdmin, portfolioController.deletePortfolio);
 
 module.exports = router;

@@ -21,7 +21,7 @@ const authSlice = createSlice({
       state.isAuthenticated = !!token;
       
       if (token) {
-        setCookie('auth_token', token, 7); // 7 days
+        setCookie('auth_token', token, 7); 
         if (user) {
           setCookie('auth_user', encodeURIComponent(JSON.stringify(user)), 7);
         }

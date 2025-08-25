@@ -1,0 +1,97 @@
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+export const clientSpaceApi = createApi({
+  reducerPath: 'clientSpaceApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl,
+    credentials: 'include',
+    prepareHeaders: (headers, { getState }) => {
+      const token = getState()?.auth?.token;
+      if (token) headers.set('authorization', `Bearer ${token}`);
+      return headers;
+    },
+  }),
+  tagTypes: ['ClientSpace'],
+  endpoints: (builder) => ({
+    getSpaces: builder.query({
+      query: () => ({ url: '/client-space/all-space', method: 'GET' }),
+      transformResponse: (response) => response?.spaces || [],
+      providesTags: (result) =>
+        result && Array.isArray(result)
+          ? [
+              ...result.map((s) => ({ type: 'ClientSpace', id: s._id })),
+              { type: 'ClientSpace', id: 'LIST' },
+            ]
+          : [{ type: 'ClientSpace', id: 'LIST' }],
+    }),
+    createSpace: builder.mutation({
+      query: ({ name, key }) => ({
+        url: '/client-space/create',
+        method: 'POST',
+        body: { name, key },
+      }),
+      transformResponse: (response) => response?.space,
+      invalidatesTags: [{ type: 'ClientSpace', id: 'LIST' }],
+    }),
+    uploadImages: builder.mutation({
+      query: ({ id, files }) => {
+        const form = new FormData();
+        files.forEach((file) => form.append('images', file));
+        return {
+          url: `/client-space/upload/${id}/images`,
+          method: 'POST',
+          body: form,
+        };
+      },
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
+    }),
+    updateSpace: builder.mutation({
+      query: ({ id, name, key }) => {
+        const body = { };
+        if (typeof name === 'string') body.name = name;
+        if (key && key.trim().length > 0) body.key = key;
+        return {
+          url: `/client-space/update/${id}`,
+          method: 'PUT',
+          body,
+        };
+      },
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
+    }),
+    deleteImage: builder.mutation({
+      query: ({ id, index }) => ({
+        url: `/client-space/${id}/image?index=${index}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
+    }),
+    replaceImage: builder.mutation({
+      query: ({ id, index, file }) => {
+        const form = new FormData();
+        form.append('image', file);
+        return {
+          url: `/client-space/${id}/image/${index}`,
+          method: 'PUT',
+          body: form,
+        };
+      },
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
+    }),
+    deleteSpace: builder.mutation({
+      query: (id) => ({ url: `/client-space/delete/${id}`, method: 'DELETE' }),
+      invalidatesTags: (_r, _e, id) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
+    }),
+  }),
+});
+
+export const {
+  useGetSpacesQuery,
+  useCreateSpaceMutation,
+  useUploadImagesMutation,
+  useUpdateSpaceMutation,
+  useDeleteImageMutation,
+  useReplaceImageMutation,
+  useDeleteSpaceMutation,
+} = clientSpaceApi;
