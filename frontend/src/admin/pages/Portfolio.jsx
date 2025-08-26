@@ -3,35 +3,6 @@ import { useGetPortfoliosQuery, useCreatePortfolioMutation, useDeletePortfolioMu
 import { useGetCategoriesQuery } from "../../store/services/categoryApi.jsx";
 import toast from "react-hot-toast";
 
-const initialPortfolios = [
-  {
-    id: 1,
-    title: "Golden Hour Wedding",
-    description: "Romantic outdoor ceremony with warm golden light.",
-    category: "Weddings",
-    imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    title: "Studio Portrait",
-    description: "Clean, minimal portrait lighting setup.",
-    category: "Portraits",
-    imageUrl: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1200&auto=format&fit=crop",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    title: "Product Flat Lay",
-    description: "E-commerce ready product shot with soft shadows.",
-    category: "Product",
-    imageUrl: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1200&auto=format&fit=crop",
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const fallbackCategories = ["Weddings", "Portraits", "Events", "Fashion", "Lifestyle", "Product"];
-
 export default function PortfolioPage() {
   const { data: items = [], isFetching } = useGetPortfoliosQuery();
   const [createPortfolio, { isLoading: isCreating }] = useCreatePortfolioMutation();
@@ -39,7 +10,7 @@ export default function PortfolioPage() {
   const [deletePortfolio, { isLoading: isDeleting }] = useDeletePortfolioMutation();
   const { data: categoriesData = [] } = useGetCategoriesQuery();
   const categories = categoriesData.length ? categoriesData : [];
-  const categoryNameList = categories.length ? categories.map((c) => c.name) : fallbackCategories;
+  const categoryNameList = categories.length ? categories.map((c) => c.name) : [];
   const categoryIdByName = useMemo(() => {
     const map = new Map();
     categories.forEach((c) => map.set(c.name, c._id));
@@ -93,7 +64,7 @@ export default function PortfolioPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
-    const categoryId = formData.category || categoryIdByName.get(categoryNameList[0]) || '';
+    const categoryId = formData.category || (categoryNameList.length > 0 ? categoryIdByName.get(categoryNameList[0]) : '');
 
     if (!editing) {
       try {
@@ -175,7 +146,7 @@ export default function PortfolioPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Portfolio Manager</h1>
-              <p className="text-white/70 mt-1">Curate stunning visuals and organize your work — locally, no API.</p>
+              <p className="text-white/70 mt-1">Manage your portfolio and organize your work in one place.</p>
             </div>
             <div className="flex gap-2 flex-wrap">
               <div className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-full px-3 py-2 border border-white/10 w-full sm:w-auto">

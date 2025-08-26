@@ -5,3 +5,13 @@ html, body, #root {
   margin: 0;
   padding: 0;
 }
+
+/* Hide scrollbars for horizontal scroll sections */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

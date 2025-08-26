@@ -2,33 +2,6 @@ import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useGetSpacesQuery, useCreateSpaceMutation, useUploadImagesMutation, useUpdateSpaceMutation, useDeleteSpaceMutation, useDeleteImageMutation, useReplaceImageMutation } from "../../store/services/clientSpaceApi.jsx";
 
-const initialSpaces = [
-  {
-    id: 1,
-    name: "Emma & Noah Wedding",
-    keyHint: "WED-2025-EMNO",
-    createdAt: new Date().toISOString(),
-    cover: "https://images.unsplash.com/photo-1521310192545-4ac7951413f0?q=80&w=1200&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop",
-    ],
-  },
-  {
-    id: 2,
-    name: "Amelia Portrait Session",
-    keyHint: "POR-2025-AMEL",
-    createdAt: new Date().toISOString(),
-    cover: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1200&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop",
-    ],
-  },
-];
-
 export default function ClientSpacesPage() {
   const { data: spaces = [], isFetching } = useGetSpacesQuery();
   const [createSpace, { isLoading: isCreating }] = useCreateSpaceMutation();
