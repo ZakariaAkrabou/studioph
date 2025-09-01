@@ -15,6 +15,8 @@ export default function ClientRoutes() {
         <Route path="gallery" element={<GalleryPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="contact" element={<ContactPage />} />
+        <Route path="client" element={<SpaceClientPage />} />
+        <Route path="client/:key" element={<SpaceClientPage />} />
         <Route path="space/:key" element={<SpaceClientPage />} />
       </Route>
     </Routes>
