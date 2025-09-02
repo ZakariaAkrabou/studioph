@@ -6,8 +6,8 @@ const sendEmail = require('../utils/sendEmail');
 
 exports.registerAdmin = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
-        const admin = new Admin({ name, email, password });
+        const { email, password } = req.body;
+        const admin = new Admin({  email, password });
         const verificationToken = admin.generateVerificationToken();
         await admin.save();
 

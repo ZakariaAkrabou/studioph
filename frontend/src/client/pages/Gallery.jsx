@@ -1,550 +1,505 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense, lazy, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FiX, FiChevronLeft, FiChevronRight, FiHeart, FiMapPin, FiSearch,
-  FiPlay, FiPause
-} from "react-icons/fi";
+import { FiX, FiChevronLeft, FiChevronRight, FiSearch, FiLoader } from "react-icons/fi";
+import { useGetPortfoliosQuery } from "../../store/services/portfolioApi";
+import { useGetCategoriesQuery } from "../../store/services/categoryApi";
 
-const BG = "#0D0D0D"; 
-const TEXT = "#FFFFFF"; 
-const MUTED = "#B3B3B3"; 
-const CARD = "#1A1A1A"; 
-const ACCENT = "#C5A46D"; 
-const HOVER = "#FFD369";
+// Lazy load heavy components
+const Lightbox = lazy(() => import('./Lightbox'));
 
-const sectionVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
-      duration: 0.8, 
-      ease: "easeOut",
-      staggerChildren: 0.1
-    } 
-  },
-};
+// Constants
+const BG = "#0D0D0D";
+const TEXT = "#FFFFFF";
+const MUTED = "#B3B3B3";
+const ACCENT = "#C5A46D";
+const ITEMS_PER_PAGE = 12;
 
-const imageVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 30 },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
-    y: 0,
-    transition: { 
-      duration: 0.6, 
-      ease: "easeOut",
-      type: "spring",
-      stiffness: 100
-    } 
-  },
-  hover: { 
-    scale: 1.03, 
-    y: -5,
-    transition: { duration: 0.3, ease: "easeOut" } 
-  }
-};
-
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      duration: 0.5,
-      staggerChildren: 0.05,
-      delayChildren: 0.2
-    }
-  }
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
+    },
+  },
 };
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 40 },
+const itemVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.9 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.6,
-      ease: "easeOut"
-    }
-  }
+    scale: 1,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
 };
 
-const slideInLeft = {
-  hidden: { opacity: 0, x: -50 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.7,
-      ease: "easeOut"
+// Skeleton loader component
+const SkeletonLoader = () => (
+  <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+      {[...Array(12)].map((_, i) => (
+        <div key={i} className={`bg-gray-800 rounded-2xl animate-pulse break-inside-avoid ${
+          i % 3 === 0 ? 'h-80' : i % 3 === 1 ? 'h-96' : 'h-72'
+        }`} />
+      ))}
+    </div>
+  </div>
+);
+
+// Optimized image component with Cloudinary transformations
+const OptimizedImage = ({ src, alt, className = "", size = "medium" }) => {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleLoad = useCallback(() => setLoaded(true), []);
+  const handleError = useCallback(() => setError(true), []);
+
+  // Optimize Cloudinary URLs with proper transformations
+  const getOptimizedUrl = useCallback((url, targetSize) => {
+    if (!url || !url.includes('cloudinary')) return url;
+    
+    const transformations = {
+      thumbnail: 'w_400,h_500,c_fill,f_auto,q_auto:eco',
+      medium: 'w_600,h_750,c_fill,f_auto,q_auto:good',
+      large: 'w_800,h_1000,c_fill,f_auto,q_auto:good',
+      preview: 'w_80,h_80,c_fill,f_auto,q_auto:eco'
+    };
+
+    const transformation = transformations[targetSize] || transformations.medium;
+    
+    // Insert transformation into Cloudinary URL
+    if (url.includes('/upload/')) {
+      return url.replace('/upload/', `/upload/${transformation}/`);
     }
-  }
+    return url;
+  }, []);
+
+  const optimizedSrc = getOptimizedUrl(src, size);
+
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      {!loaded && !error && (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 animate-pulse rounded-2xl flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-gray-600 border-t-gray-400 rounded-full animate-spin"></div>
+        </div>
+      )}
+      {error ? (
+        <div className="absolute inset-0 bg-gray-800 rounded-2xl flex items-center justify-center">
+          <span className="text-gray-400 text-sm">Failed to load</span>
+        </div>
+      ) : (
+        <img
+          src={optimizedSrc}
+          alt={alt}
+          loading="lazy"
+          onLoad={handleLoad}
+          onError={handleError}
+          className={`w-full h-full object-cover rounded-2xl transition-all duration-500 ${
+            loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+          }`}
+        />
+      )}
+    </div>
+  );
 };
 
-const slideInRight = {
-  hidden: { opacity: 0, x: 50 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.7,
-      ease: "easeOut"
+// Pagination component
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  const getVisiblePages = () => {
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
+
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
     }
-  }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...');
+    } else {
+      rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages);
+    } else if (totalPages > 1) {
+      rangeWithDots.push(totalPages);
+    }
+
+    return rangeWithDots;
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-center gap-2 mt-16">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`p-2 rounded-lg transition-colors ${
+          currentPage === 1 
+            ? 'text-gray-600 cursor-not-allowed' 
+            : 'text-white hover:bg-white/10'
+        }`}
+      >
+        <FiChevronLeft className="w-5 h-5" />
+      </button>
+
+      {getVisiblePages().map((page, index) => (
+        <button
+          key={index}
+          onClick={() => typeof page === 'number' && onPageChange(page)}
+          disabled={page === '...'}
+          className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+            page === currentPage
+              ? 'text-black font-semibold shadow-lg scale-105'
+              : page === '...'
+              ? 'text-gray-500 cursor-default'
+              : 'text-white hover:bg-white/10 hover:scale-105'
+          }`}
+          style={{
+            background: page === currentPage 
+              ? `linear-gradient(135deg, ${ACCENT} 0%, #FFD369 100%)` 
+              : 'transparent'
+          }}
+        >
+          {page}
+        </button>
+      ))}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`p-2 rounded-lg transition-colors ${
+          currentPage === totalPages 
+            ? 'text-gray-600 cursor-not-allowed' 
+            : 'text-white hover:bg-white/10'
+        }`}
+      >
+        <FiChevronRight className="w-5 h-5" />
+      </button>
+    </div>
+  );
 };
-
-const mockPhotos = [
-  { id: "p1", url: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop", w: 1600, h: 1066, title: "Wedding Vows", location: "NYC", category: "wedding", likes: 234, photographer: "Elena Foster" },
-  { id: "p2", url: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1200&auto=format&fit=crop", w: 1200, h: 800, title: "Studio Portrait", location: "LA", category: "portraits", likes: 189, photographer: "David Chen" },
-  { id: "p3", url: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&auto=format&fit=crop", w: 1200, h: 800, title: "Concert Lights", location: "Berlin", category: "events", likes: 156, photographer: "Maya Singh" },
-  { id: "p4", url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 933, title: "Fashion Street", location: "Paris", category: "fashion", likes: 298, photographer: "Omar Riad" },
-  { id: "p5", url: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 934, title: "Misty Peaks", location: "Alps", category: "nature", likes: 412, photographer: "Sara Müller" },
-  { id: "p6", url: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 939, title: "Alley Shadows", location: "Tokyo", category: "street", likes: 221, photographer: "Leo Martin" },
-  { id: "p7", url: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 933, title: "Product Set", location: "Studio", category: "commercial", likes: 143, photographer: "Ava Thompson" },
-  { id: "p8", url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 934, title: "Lifestyle Laugh", location: "Lisbon", category: "portraits", likes: 205, photographer: "Noah Carter" },
-  { id: "p9", url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 933, title: "First Dance", location: "Rome", category: "wedding", likes: 352, photographer: "Isabella Rossi" },
-  { id: "p10", url: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 933, title: "Conference", location: "Dubai", category: "events", likes: 97, photographer: "Elena Foster" },
-  { id: "p11", url: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 934, title: "Golden Dunes", location: "Sahara", category: "nature", likes: 267, photographer: "David Chen" },
-  { id: "p12", url: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?q=80&w=1400&auto=format&fit=crop", w: 1400, h: 933, title: "Runway Pose", location: "Milan", category: "fashion", likes: 176, photographer: "Maya Singh" },
-];
-
-const categories = [
-  { key: "all", label: "All" },
-  { key: "wedding", label: "Wedding" },
-  { key: "portraits", label: "Portraits" },
-  { key: "events", label: "Events" },
-  { key: "fashion", label: "Fashion" },
-  { key: "nature", label: "Nature" },
-  { key: "street", label: "Street" },
-  { key: "commercial", label: "Commercial" },
-];
 
 const Gallery = () => {
   const [active, setActive] = useState("all");
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [isSlideshow, setIsSlideshow] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = useMemo(() => {
-    let result = active === "all" ? mockPhotos : mockPhotos.filter((p) => p.category === active);
+  // API queries
+  const { data: portfolios = [], isLoading: portfoliosLoading, error: portfoliosError } = useGetPortfoliosQuery();
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useGetCategoriesQuery();
+
+  // Transform portfolio data for display
+  const transformedPortfolios = useMemo(() => {
+    return portfolios.map(portfolio => ({
+      id: portfolio._id,
+      url: portfolio.imageUrl,
+      title: portfolio.title,
+      description: portfolio.description,
+      category: portfolio.category?.name?.toLowerCase() || 'uncategorized',
+      photographer: 'StudioPH'
+    }));
+  }, [portfolios]);
+
+  // Transform categories for filter
+  const categoriesList = useMemo(() => {
+    const allCategories = [{ key: "all", label: "All" }];
     
-    return result;
+    categories.forEach(cat => {
+      allCategories.push({
+        key: cat.name.toLowerCase(),
+        label: cat.name
+      });
+    });
+    
+    return allCategories;
+  }, [categories]);
+
+  // Filter photos based on active category
+  const filtered = useMemo(() => {
+    if (active === "all") {
+      return transformedPortfolios;
+    }
+    return transformedPortfolios.filter((p) => p.category.toLowerCase() === active);
+  }, [active, transformedPortfolios]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedPhotos = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filtered, currentPage]);
+
+  // Reset pagination when category changes
+  useEffect(() => {
+    setCurrentPage(1);
   }, [active]);
 
+  // Handle slideshow
   useEffect(() => {
-    if (isSlideshow && lightboxIndex >= 0) {
-      const timer = setInterval(() => {
-        setLightboxIndex((i) => (i + 1) % filtered.length);
-      }, 4000);
-      return () => clearInterval(timer);
-    }
-  }, [isSlideshow, lightboxIndex, filtered.length]);
+    if (!isSlideshow || lightboxIndex < 0) return;
+    
+    const timer = setTimeout(() => {
+      setLightboxIndex((prev) => (prev + 1) % paginatedPhotos.length);
+    }, 4000);
 
-  useEffect(() => {
-    setZoom(1);
-  }, [lightboxIndex]);
+    return () => clearTimeout(timer);
+  }, [isSlideshow, lightboxIndex, paginatedPhotos.length]);
 
+  // Keyboard navigation
   useEffect(() => {
-    const onKey = (e) => {
-      if (lightboxIndex < 0) return;
-      if (e.key === "Escape") setLightboxIndex(-1);
-      if (e.key === "ArrowRight") setLightboxIndex((i) => (i + 1) % filtered.length);
-      if (e.key === "ArrowLeft") setLightboxIndex((i) => (i - 1 + filtered.length) % filtered.length);
-      if (e.key === " ") {
-        e.preventDefault();
-        setIsSlideshow(!isSlideshow);
+    if (lightboxIndex < 0) return;
+
+    const handleKeyDown = (e) => {
+      switch (e.key) {
+        case 'Escape':
+          setLightboxIndex(-1);
+          break;
+        case 'ArrowRight':
+          setLightboxIndex((i) => (i + 1) % paginatedPhotos.length);
+          break;
+        case 'ArrowLeft':
+          setLightboxIndex((i) => (i - 1 + paginatedPhotos.length) % paginatedPhotos.length);
+          break;
+        case ' ':
+          e.preventDefault();
+          setIsSlideshow(!isSlideshow);
+          break;
+        case '+':
+        case '=':
+          setZoom((z) => Math.min(3, +(z + 0.2).toFixed(2)));
+          break;
+        case '-':
+        case '_':
+          setZoom((z) => Math.max(1, +(z - 0.2).toFixed(2)));
+          break;
+        case '0':
+          setZoom(1);
+          break;
+        default:
+          break;
       }
-      if (e.key === "+" || e.key === "=") setZoom((z) => Math.min(2, +(z + 0.2).toFixed(2)));
-      if (e.key === "-" || e.key === "_") setZoom((z) => Math.max(1, +(z - 0.2).toFixed(2)));
-      if (e.key === "0") setZoom(1);
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [lightboxIndex, filtered.length, isSlideshow]);
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxIndex, paginatedPhotos.length, isSlideshow]);
+
+  // Loading state
+  if (portfoliosLoading || categoriesLoading) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: BG, color: TEXT }}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <FiLoader className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: ACCENT }} />
+            <p className="text-lg" style={{ color: MUTED }}>Loading gallery...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (portfoliosError || categoriesError) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: BG, color: TEXT }}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-xl mb-4">Failed to load gallery</p>
+            <p className="text-sm" style={{ color: MUTED }}>Please try refreshing the page</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <motion.div 
-      className="min-h-screen" 
-      style={{ backgroundColor: BG, color: TEXT }} 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      transition={{ duration: 0.8, ease: "easeOut" }}
-    >
+    <div className="min-h-screen" style={{ backgroundColor: BG, color: TEXT }}>
+      {/* Header Section */}
       <motion.header 
-        className="relative py-8 sm:py-12 md:py-16 overflow-hidden" 
-        variants={sectionVariants} 
-        initial="hidden" 
-        animate="visible"
+        className="relative py-16 md:py-24 overflow-hidden"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
       >
-        <motion.div 
-          className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/60" 
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-        />
-        <motion.div 
-          className="absolute inset-0" 
-          style={{ background: "radial-gradient(60% 50% at 50% 60%, rgba(197,164,109,0.08) 0%, rgba(0,0,0,0) 100%)" }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-        />
-        
+        <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/60" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.h1 
-            className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight mb-3 sm:mb-4"
-            variants={slideInLeft}
-            initial="hidden"
-            animate="visible"
+            className="text-5xl md:text-7xl font-bold tracking-tight mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
           >
             Gallery
           </motion.h1>
-          
           <motion.p 
-            className="text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed px-4"
+            className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed"
             style={{ color: MUTED }}
-            variants={slideInRight}
-            initial="hidden"
-            animate="visible"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
           >
             Discover stunning moments captured through our lens
           </motion.p>
         </div>
       </motion.header>
 
-      <motion.section className="py-6 sm:py-8 md:py-12 relative" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/20 to-transparent" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Category Filter */}
+      <motion.section 
+        className="py-12 md:py-16 relative"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap gap-3 justify-center">
+            {categoriesList.map((category) => (
+              <motion.button
+                key={category.key}
+                onClick={() => setActive(category.key)}
+                className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
+                  active === category.key 
+                    ? 'text-black shadow-lg scale-105' 
+                    : 'text-white hover:scale-105 hover:shadow-md'
+                }`}
+                style={{
+                  background: active === category.key 
+                    ? `linear-gradient(135deg, ${ACCENT} 0%, #FFD369 100%)` 
+                    : 'rgba(26,26,26,0.8)',
+                  border: active === category.key 
+                    ? `2px solid ${ACCENT}` 
+                    : '2px solid rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)'
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {category.label}
+              </motion.button>
+            ))}
+          </div>
+          
           <motion.div 
-            className="text-center"
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <motion.h3 
-              className="text-xl sm:text-2xl font-semibold mb-6 sm:mb-8" 
-              style={{ color: TEXT }}
-              variants={slideInLeft}
-            >
-              Explore by <span style={{ color: ACCENT }}>Category</span>
-            </motion.h3>
-            
-            <motion.div 
-              className="flex flex-wrap gap-2 sm:gap-3 md:gap-4 justify-center max-w-5xl mx-auto px-2"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-            >
-              {categories.map((c, index) => (
-                <motion.button
-                  key={c.key}
-                  onClick={() => setActive(c.key)}
-                  variants={fadeInUp}
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`group relative px-3 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-sm sm:text-base rounded-xl sm:rounded-2xl font-medium transition-all duration-300 ${
-                    active === c.key 
-                      ? "text-black shadow-lg transform scale-105" 
-                      : "hover:shadow-md"
-                  }`}
-                  style={{ 
-                    background: active === c.key 
-                      ? `linear-gradient(135deg, ${ACCENT} 0%, ${HOVER} 100%)` 
-                      : "rgba(26,26,26,0.6)",
-                    border: active === c.key 
-                      ? `2px solid ${ACCENT}` 
-                      : "2px solid rgba(255,255,255,0.1)",
-                    color: active === c.key ? "#000" : TEXT,
-                    backdropFilter: "blur(10px)"
-                  }}
-                >
-                  <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity ${active === c.key ? 'hidden' : ''}`}
-                       style={{ background: `linear-gradient(135deg, rgba(197,164,109,0.2) 0%, rgba(255,211,105,0.2) 100%)` }} />
-                  
-                  <span className="relative z-10">{c.label}</span>
-                  
-                  {active === c.key && (
-                    <motion.div 
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
-                      style={{ backgroundColor: "#000" }}
-                      layoutId="activeCategory"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    />
-                  )}
-                </motion.button>
-              ))}
-            </motion.div>
-            
-            <motion.div 
-              className="mt-6 sm:mt-8 text-xs sm:text-sm"
-              style={{ color: MUTED }}
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              transition={{ delay: 0.8 }}
-            >
-              Showing <span className="font-semibold" style={{ color: ACCENT }}>{filtered.length}</span> {filtered.length === 1 ? 'photo' : 'photos'}
-            </motion.div>
-          </motion.div>
-        </div>
-      </motion.section>
-
-      <motion.section className="py-6 sm:py-8 md:py-12" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          {filtered.length === 0 ? (
-            <div className="text-center py-24">
-              <FiSearch className="w-16 h-16 mx-auto mb-6" style={{ color: MUTED }} />
-              <h3 className="text-2xl font-semibold mb-3">No photos found</h3>
-              <p className="text-lg" style={{ color: MUTED }}>Try a different search term or category</p>
-            </div>
-          ) : (
-            <motion.div 
-              className="columns-1 sm:columns-2 lg:columns-3 [column-fill:_balance]
-                              gap-3 sm:gap-4 md:gap-6 lg:gap-7 xl:gap-8
-                              [--g:12px] sm:[--g:16px] md:[--g:20px] lg:[--g:24px] xl:[--g:32px]
-                              [&>*:not(:first-child)]:mt-[var(--g)]"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-            >
-              {filtered.map((p, idx) => (
-                <motion.figure
-                  key={p.id}
-                  variants={imageVariants}
-                  whileHover="hover"
-                  className="break-inside-avoid group relative cursor-pointer overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl transform-gpu will-change-transform transition-all duration-300 ease-out hover:ring-1 sm:hover:ring-2 hover:ring-[rgba(197,164,109,0.8)] hover:shadow-[0_10px_30px_rgba(197,164,109,0.3)] sm:hover:shadow-[0_20px_60px_rgba(197,164,109,0.4),0_0_40px_rgba(197,164,109,0.3)] hover:backdrop-blur-sm"
-                  style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.08)" }}
-                  onClick={() => setLightboxIndex(idx)}
-                  layout
-                >
-                  <motion.div 
-                    className="relative overflow-hidden"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ 
-                      duration: 0.6, 
-                      delay: idx * 0.05,
-                      ease: "easeOut",
-                      type: "spring",
-                      stiffness: 100
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-[rgba(197,164,109,0.2)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 pointer-events-none" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 pointer-events-none" />
-                    <motion.img
-                      src={p.url}
-                      alt={p.title}
-                      className="w-full h-auto object-cover transform-gpu will-change-transform transition-all duration-300 ease-out group-hover:scale-[1.03] group-hover:brightness-110 group-hover:contrast-105"
-                      initial={{ scale: 1.1, opacity: 0 }}
-                      whileInView={{ scale: 1, opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                    />
-                  </motion.div>
-                </motion.figure>
-              ))}
-            </motion.div>
-          )}
-        </div>
-      </motion.section>
-
-      <AnimatePresence>
-        {lightboxIndex >= 0 && (
-          <motion.div
-            className="fixed inset-0 z-50 bg-gradient-to-br from-gray-900 via-black to-gray-900"
+            className="mt-8 text-center text-sm"
+            style={{ color: MUTED }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            onClick={(e) => e.target === e.currentTarget && setLightboxIndex(-1)}
+            transition={{ delay: 0.6 }}
           >
-            <motion.div 
-              className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-6"
-              initial={{ y: -50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -50, opacity: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <div className="flex items-center justify-between">
-                <motion.div 
-                  className="flex items-center space-x-6"
-                  initial={{ x: -30, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.4 }}
-                >
-                  <h3 className="text-xl font-semibold text-white">{filtered[lightboxIndex]?.title}</h3>
-                  <span className="text-sm text-gray-300">by {filtered[lightboxIndex]?.photographer}</span>
-                  <span className="text-sm text-gray-400">
-                    {lightboxIndex + 1} of {filtered.length}
-                  </span>
-                </motion.div>
-                <motion.button
-                  onClick={() => setLightboxIndex(-1)}
-                  className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                  initial={{ x: 30, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.4 }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <FiX className="w-6 h-6 text-white" />
-                </motion.button>
-              </div>
-            </motion.div>
-
-            <div className="absolute inset-0 pt-16 sm:pt-20 pb-20 sm:pb-24 px-3 sm:px-6">
-              <div className="h-full flex items-center justify-center">
-                <motion.div
-                  key={lightboxIndex}
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="relative max-w-xs sm:max-w-2xl md:max-w-4xl max-h-full"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div 
-                    className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer"
-                    style={{ boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05)` }}
-                    onDoubleClick={() => setZoom((z) => (z > 1 ? 1 : 1.8))}
-                  >
-                    <img
-                      src={filtered[lightboxIndex]?.url}
-                      alt={filtered[lightboxIndex]?.title}
-                      className="w-full h-auto object-cover select-none transition-transform duration-300"
-                      style={{ transform: `scale(${zoom})`, maxHeight: '60vh', maxWidth: '90vw' }}
-                      draggable={false}
-                    />
-                    
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 sm:p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-                          <div className="flex items-center gap-2">
-                            <FiMapPin className="w-4 h-4" style={{ color: ACCENT }} />
-                            <span>{filtered[lightboxIndex]?.location}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FiHeart className="w-4 h-4" style={{ color: HOVER }} />
-                            <span>{filtered[lightboxIndex]?.likes}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setZoom((z) => Math.max(1, +(z - 0.2).toFixed(2))); }}
-                            className="px-2 sm:px-3 py-1 rounded-md bg-black/50 hover:bg-black/70 text-xs sm:text-sm transition-colors"
-                          >
-                            -
-                          </button>
-                          <span className="px-2 sm:px-3 py-1 bg-black/30 rounded-md text-xs min-w-[35px] sm:min-w-[45px] text-center">
-                            {zoom.toFixed(1)}x
-                          </span>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setZoom((z) => Math.min(2.5, +(z + 0.2).toFixed(2))); }}
-                            className="px-2 sm:px-3 py-1 rounded-md bg-black/50 hover:bg-black/70 text-xs sm:text-sm transition-colors"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-
-            <motion.button
-              onClick={() => setLightboxIndex((lightboxIndex - 1 + filtered.length) % filtered.length)}
-              className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-4 rounded-full bg-black/50 hover:bg-black/70 transition-all"
-              initial={{ x: -30, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              whileHover={{ scale: 1.1, x: -2 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <FiChevronLeft className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-            </motion.button>
-            <motion.button
-              onClick={() => setLightboxIndex((lightboxIndex + 1) % filtered.length)}
-              className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-4 rounded-full bg-black/50 hover:bg-black/70 transition-all"
-              initial={{ x: 30, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              whileHover={{ scale: 1.1, x: 2 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <FiChevronRight className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-            </motion.button>
-
-            <motion.div 
-              className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/80 to-transparent p-3 sm:p-6"
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 50, opacity: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); setIsSlideshow((s) => !s); }}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all text-sm ${isSlideshow ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {isSlideshow ? (
-                    <><FiPause className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />Stop</>
-                  ) : (
-                    <><FiPlay className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />Play</>
-                  )}
-                </motion.button>
-                
-                <motion.div 
-                  className="flex items-center gap-2 sm:gap-3 overflow-x-auto max-w-full"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
-                >
-                  {filtered.slice(Math.max(0, lightboxIndex - 2), lightboxIndex + 3).map((p, idx) => {
-                    const actualIdx = Math.max(0, lightboxIndex - 2) + idx;
-                    return (
-                      <motion.button
-                        key={p.id}
-                        onClick={(e) => { e.stopPropagation(); setLightboxIndex(actualIdx); }}
-                        className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden border-2 transition-all ${
-                          actualIdx === lightboxIndex 
-                            ? 'border-white scale-125' 
-                            : 'border-white/40 hover:border-white/70 hover:scale-110'
-                        }`}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.1 * idx, duration: 0.3 }}
-                        whileHover={{ scale: actualIdx === lightboxIndex ? 1.25 : 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <img src={p.url} alt={p.title} className="w-full h-full object-cover" />
-                      </motion.button>
-                    );
-                  })}
-                </motion.div>
-              </div>
-            </motion.div>
-
-            <div 
-              className="absolute inset-0 z-10"
-              onClick={() => setLightboxIndex(-1)}
-            />
+            Showing <span className="font-semibold" style={{ color: ACCENT }}>{paginatedPhotos.length}</span> of <span className="font-semibold" style={{ color: ACCENT }}>{filtered.length}</span> {filtered.length === 1 ? 'photo' : 'photos'}
           </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Photo Grid */}
+      <section className="pb-24">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+          {filtered.length === 0 ? (
+            <div className="text-center py-32">
+              <FiSearch className="w-20 h-20 mx-auto mb-8" style={{ color: MUTED }} />
+              <h3 className="text-3xl font-semibold mb-4">No photos found</h3>
+              <p className="text-xl" style={{ color: MUTED }}>Try selecting a different category</p>
+            </div>
+          ) : (
+            <Suspense fallback={<SkeletonLoader />}>
+              <motion.div 
+                className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                key={currentPage} // Re-animate on page change
+              >
+                {paginatedPhotos.map((photo, index) => {
+                  // Vary heights for masonry effect
+                  const heights = ['h-64', 'h-80', 'h-96', 'h-72', 'h-88'];
+                  const randomHeight = heights[index % heights.length];
+                  
+                  return (
+                    <motion.div
+                      key={photo.id}
+                      className={`group relative cursor-pointer break-inside-avoid ${randomHeight}`}
+                      variants={itemVariants}
+                      onClick={() => setLightboxIndex(index)}
+                      whileHover={{ scale: 1.02, y: -4 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                      <div className="relative w-full h-full overflow-hidden rounded-2xl bg-gray-900 shadow-xl group-hover:shadow-2xl transition-all duration-500">
+                        <OptimizedImage 
+                          src={photo.url}
+                          alt={photo.title}
+                          className="w-full h-full"
+                          size="medium"
+                        />
+                        
+                        {/* Elegant Hover Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-2xl">
+                          <div className="absolute bottom-0 left-0 right-0 p-5">
+                            <motion.h3 
+                              className="text-white font-semibold text-lg mb-1 truncate"
+                              initial={{ y: 20, opacity: 0 }}
+                              whileInView={{ y: 0, opacity: 1 }}
+                              transition={{ delay: 0.1 }}
+                            >
+                              {photo.title}
+                            </motion.h3>
+                            <motion.p 
+                              className="text-gray-300 text-sm truncate"
+                              initial={{ y: 20, opacity: 0 }}
+                              whileInView={{ y: 0, opacity: 1 }}
+                              transition={{ delay: 0.2 }}
+                            >
+                              {photo.photographer}
+                            </motion.p>
+                          </div>
+                        </div>
+
+                        {/* Subtle border glow */}
+                        <div className="absolute inset-0 rounded-2xl ring-1 ring-white/10 group-hover:ring-white/30 transition-all duration-500" />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+
+              {/* Pagination */}
+              <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </Suspense>
+          )}
+        </div>
+      </section>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxIndex >= 0 && (
+          <Suspense fallback={null}>
+            <Lightbox
+              photos={paginatedPhotos}
+              currentIndex={lightboxIndex}
+              onClose={() => setLightboxIndex(-1)}
+              onNext={() => setLightboxIndex((i) => (i + 1) % paginatedPhotos.length)}
+              onPrev={() => setLightboxIndex((i) => (i - 1 + paginatedPhotos.length) % paginatedPhotos.length)}
+              isSlideshow={isSlideshow}
+              onToggleSlideshow={() => setIsSlideshow(!isSlideshow)}
+              zoom={zoom}
+              onZoom={setZoom}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
 

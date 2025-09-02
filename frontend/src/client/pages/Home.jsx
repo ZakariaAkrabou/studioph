@@ -11,6 +11,8 @@ import {
   FiCamera,
   FiEye,
 } from "react-icons/fi";
+import { useGetCategoriesQuery } from "../../store/services/categoryApi";
+import { useGetPortfoliosQuery } from "../../store/services/portfolioApi";
 
 const BG = "#0D0D0D";
 const TEXT = "#FFFFFF";
@@ -69,7 +71,9 @@ const containerVariants = {
 };
 
 export default function HomePage() {
-  // Demo data
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useGetCategoriesQuery();
+  const { data: portfolios = [], isLoading: portfoliosLoading, error: portfoliosError } = useGetPortfoliosQuery();
+
   const heroSlides = useMemo(
     () => [
       {
@@ -94,133 +98,29 @@ export default function HomePage() {
     []
   );
 
-  // Autoplay for hero slider
+  const featuredGalleries = useMemo(() => {
+    if (!portfolios || portfolios.length === 0) return [];
+    
+    return portfolios
+      .slice(0, 6)
+      .map((portfolio, index) => ({
+        id: portfolio._id,
+        title: portfolio.title,
+        description: portfolio.description || "Beautiful photography capturing special moments.",
+        image: portfolio.imageUrl,
+        category: portfolio.categoryLabel || "Photography",
+        date: new Date(portfolio.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        photographer: "Studio Photographer",
+        photos: Math.floor(Math.random() * 30) + 10, 
+      }));
+  }, [portfolios]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % heroSlides.length);
     }, 6000);
     return () => clearInterval(timer);
   }, [heroSlides.length]);
-
-  const categories = [
-    {
-      key: "wedding",
-      title: "Wedding",
-      image:
-        "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      key: "portraits",
-      title: "Portraits",
-      image:
-        "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      key: "nature",
-      title: "Nature",
-      image:
-        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      key: "street",
-      title: "Street",
-      image:
-        "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      key: "fashion",
-      title: "Fashion",
-      image:
-        "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop",
-    },
-  ];
-
-  const featuredGalleries = [
-    {
-      id: "gal_1",
-      title: "Romantic Wedding Collection",
-      description: "Capturing love stories with timeless elegance and natural beauty.",
-      image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop",
-      category: "Wedding",
-      date: "Dec 2024",
-      photographer: "Elena Foster",
-      photos: 42,
-    },
-    {
-      id: "gal_2",
-      title: "Portrait Masterpieces",
-      description: "Professional headshots and lifestyle portraits that tell your story.",
-      image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1200&auto=format&fit=crop",
-      category: "Portraits",
-      date: "Nov 2024",
-      photographer: "David Chen",
-      photos: 18,
-    },
-    {
-      id: "gal_3",
-      title: "Urban Nights",
-      description: "City lights and street photography capturing the pulse of urban life.",
-      image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&auto=format&fit=crop",
-      category: "Street",
-      date: "Oct 2024",
-      photographer: "Maya Singh",
-      photos: 27,
-    },
-    {
-      id: "gal_4",
-      title: "Nature's Symphony",
-      description: "Breathtaking landscapes and wildlife photography from around the world.",
-      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1200&auto=format&fit=crop",
-      category: "Nature",
-      date: "Sep 2024",
-      photographer: "Omar Riad",
-      photos: 36,
-    },
-    {
-      id: "gal_5",
-      title: "Fashion Forward",
-      description: "High-fashion editorial shoots showcasing style and creativity.",
-      image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop",
-      category: "Fashion",
-      date: "Aug 2024",
-      photographer: "Sara Müller",
-      photos: 22,
-    },
-    {
-      id: "gal_6",
-      title: "Elegant Evenings",
-      description: "Sophisticated event photography capturing memorable moments.",
-      image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop",
-      category: "Wedding",
-      date: "Jul 2024",
-      photographer: "Leo Martin",
-      photos: 30,
-    },
-  ];
-
-  const spotlight = [
-    {
-      id: "p1",
-      name: "Ava Thompson",
-      tagline: "Timeless stories in natural light",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop",
-    },
-    {
-      id: "p2",
-      name: "Noah Carter",
-      tagline: "Bold frames. Honest moments.",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
-    },
-    {
-      id: "p3",
-      name: "Isabella Rossi",
-      tagline: "Fashion-forward, story-driven",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop",
-    },
-  ];
 
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -348,44 +248,63 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          <motion.div 
-            className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
-            variants={containerVariants}
-            style={{ 
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              WebkitOverflowScrolling: 'touch'
-            }}
-          >
-            {categories.map((cat) => (
-              <motion.div
-                key={cat.key}
-                className="min-w-[180px] sm:min-w-[220px] snap-start rounded-xl overflow-hidden group cursor-pointer"
-                style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}
-                variants={fadeInUp}
-                whileHover={{ y: -6, scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="relative h-32 sm:h-40 overflow-hidden">
-                  <img src={cat.image} alt={cat.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
-                </div>
-                <div className="p-3 sm:p-4">
-                  <h3 className="font-semibold text-sm sm:text-base mb-1">{cat.title}</h3>
-                  <p className="text-xs sm:text-sm mb-3" style={{ color: MUTED }}>Explore {cat.title.toLowerCase()}</p>
-                  <Link
-                    to={`/gallery?category=${cat.key}`}
-                    className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium transition-colors duration-300 group-hover:translate-x-1"
-                    style={{ color: HOVER }}
-                  >
-                    View Collection
-                    <FiArrowRight className="w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+          {categoriesLoading ? (
+            <motion.div 
+              className="flex justify-center items-center py-12"
+              variants={fadeInUp}
+            >
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{ borderColor: ACCENT }}></div>
+                <p style={{ color: MUTED }}>Loading categories...</p>
+              </div>
+            </motion.div>
+          ) : categoriesError ? (
+            <motion.div 
+              className="text-center py-12"
+              variants={fadeInUp}
+            >
+              <p style={{ color: "#ff6b6b" }}>Failed to load categories. Please try again later.</p>
+            </motion.div>
+          ) : (
+            <motion.div 
+              className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
+              variants={containerVariants}
+              style={{ 
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              {categories.map((cat) => (
+                <motion.div
+                  key={cat._id}
+                  className="min-w-[180px] sm:min-w-[220px] snap-start rounded-xl overflow-hidden group cursor-pointer"
+                  style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}
+                  variants={fadeInUp}
+                  whileHover={{ y: -6, scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="relative h-32 sm:h-40 overflow-hidden">
+                    <img src={cat.image} alt={cat.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
+                  </div>
+                  <div className="p-3 sm:p-4">
+                    <h3 className="font-semibold text-sm sm:text-base mb-1">{cat.name}</h3>
+                    <p className="text-xs sm:text-sm mb-3" style={{ color: MUTED }}>Explore {cat.name.toLowerCase()}</p>
+                    <Link
+                      to={`/gallery?category=${cat._id}`}
+                      className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium transition-colors duration-300 group-hover:translate-x-1"
+                      style={{ color: HOVER }}
+                    >
+                      View Collection
+                      <FiArrowRight className="w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
       </motion.section>
 
@@ -401,55 +320,80 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
-            variants={containerVariants}
-          >
-            {featuredGalleries.map((g) => (
-              <motion.div
-                key={g.id}
-                className="rounded-xl overflow-hidden group cursor-pointer"
-                style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}
-                variants={fadeInUp}
-                whileHover={{ y: -6, scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="relative h-48 sm:h-56 overflow-hidden">
-                  <img src={g.image} alt={g.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
-                  <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm" style={{ backgroundColor: `${ACCENT}CC`, color: "#0D0D0D" }}>
-                    {g.category}
+          {portfoliosLoading ? (
+            <motion.div 
+              className="flex justify-center items-center py-12"
+              variants={fadeInUp}
+            >
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{ borderColor: ACCENT }}></div>
+                <p style={{ color: MUTED }}>Loading featured galleries...</p>
+              </div>
+            </motion.div>
+          ) : portfoliosError ? (
+            <motion.div 
+              className="text-center py-12"
+              variants={fadeInUp}
+            >
+              <p style={{ color: "#ff6b6b" }}>Failed to load featured galleries. Please try again later.</p>
+            </motion.div>
+          ) : featuredGalleries.length === 0 ? (
+            <motion.div 
+              className="text-center py-12"
+              variants={fadeInUp}
+            >
+              <p style={{ color: MUTED }}>No featured galleries available at the moment.</p>
+            </motion.div>
+          ) : (
+            <motion.div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+              variants={containerVariants}
+            >
+              {featuredGalleries.map((g) => (
+                <motion.div
+                  key={g.id}
+                  className="rounded-xl overflow-hidden group cursor-pointer"
+                  style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}
+                  variants={fadeInUp}
+                  whileHover={{ y: -6, scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="relative h-48 sm:h-56 overflow-hidden">
+                    <img src={g.image} alt={g.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
+                    <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm" style={{ backgroundColor: `${ACCENT}CC`, color: "#0D0D0D" }}>
+                      {g.category}
+                    </div>
+                    <div className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <FiArrowRight className="w-4 h-4" style={{ color: ACCENT }} />
+                    </div>
                   </div>
-                  <div className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <FiArrowRight className="w-4 h-4" style={{ color: ACCENT }} />
+                  <div className="p-4 sm:p-5">
+                    <h3 className="font-semibold text-base sm:text-lg mb-2 group-hover:text-opacity-80 transition-colors">{g.title}</h3>
+                    <p className="text-sm mb-4 line-clamp-2" style={{ color: MUTED }}>
+                      {g.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs" style={{ color: MUTED }}>
+                        {g.date}
+                      </span>
+                      <Link
+                        to={`/gallery?category=${g.category.toLowerCase()}`}
+                        className="inline-flex items-center gap-1 text-sm font-medium transition-all duration-300 group-hover:translate-x-1"
+                        style={{ color: HOVER }}
+                      >
+                        View Gallery
+                        <FiArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      </Link>
+                    </div>
                   </div>
-                </div>
-                <div className="p-4 sm:p-5">
-                  <h3 className="font-semibold text-base sm:text-lg mb-2 group-hover:text-opacity-80 transition-colors">{g.title}</h3>
-                  <p className="text-sm mb-4 line-clamp-2" style={{ color: MUTED }}>
-                    {g.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs" style={{ color: MUTED }}>
-                      {g.date}
-                    </span>
-                    <Link
-                      to={`/gallery?category=${g.category.toLowerCase()}`}
-                      className="inline-flex items-center gap-1 text-sm font-medium transition-all duration-300 group-hover:translate-x-1"
-                      style={{ color: HOVER }}
-                    >
-                      View Gallery
-                      <FiArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
       </motion.section>
-
 
       <motion.section className="py-8 sm:py-12 md:py-16" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

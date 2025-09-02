@@ -7,7 +7,6 @@ const Category = require('../models/Category');
 const Portfolio = require('../models/Portfolio');
 const ClientSpace = require('../models/ClientSpace');
 
-
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.DB_CONNECTION_STRING || 'mongodb://localhost:27017/studioph');
@@ -18,23 +17,12 @@ const connectDB = async () => {
   }
 };
 
-
 const adminData = [
   {
     email: 'admin@studioph.com',
     password: 'Admin123!',
     isVerified: true
   },
-  {
-    email: 'photographer@studioph.com',
-    password: 'Photo123!',
-    isVerified: true
-  },
-  {
-    email: 'studio@studioph.com',
-    password: 'Studio123!',
-    isVerified: true
-  }
 ];
 
 const categoryData = [
@@ -49,188 +37,60 @@ const categoryData = [
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop'
   },
   {
-    name: 'Events',
-    description: 'Corporate events, parties, and special occasions',
-    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&auto=format&fit=crop'
+    name: 'Nature',
+    description: 'Stunning nature and landscape photography',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop'
   },
   {
     name: 'Fashion',
-    description: 'Fashion photography and editorial shoots',
-    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop'
+    description: 'High-end fashion and editorial photography',
+    image: 'https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?q=80&w=800&auto=format&fit=crop'
   },
   {
-    name: 'Nature',
-    description: 'Landscape and nature photography',
-    image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    name: 'Street',
-    description: 'Urban street photography and city life',
-    image: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    name: 'Commercial',
-    description: 'Product and commercial photography',
-    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    name: 'Lifestyle',
-    description: 'Lifestyle and documentary photography',
-    image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop'
+    name: 'Events',
+    description: 'Professional event coverage for all occasions',
+    image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop'
   }
 ];
 
-const portfolioData = [
-  {
-    title: 'Eternal Love - Wedding Ceremony',
-    description: 'A beautiful outdoor wedding ceremony captured in golden hour light',
-    imageUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null 
-  },
-  {
-    title: 'Professional Headshot',
-    description: 'Corporate headshot with modern lighting and professional backdrop',
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Concert Energy',
-    description: 'Dynamic concert photography capturing the energy of live music',
-    imageUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Fashion Editorial',
-    description: 'High-end fashion photography with dramatic lighting',
-    imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Mountain Majesty',
-    description: 'Breathtaking landscape photography of mountain ranges',
-    imageUrl: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Urban Shadows',
-    description: 'Street photography exploring urban architecture and shadows',
-    imageUrl: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Product Showcase',
-    description: 'Professional product photography with clean backgrounds',
-    imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Lifestyle Moment',
-    description: 'Candid lifestyle photography capturing authentic moments',
-    imageUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Wedding Reception',
-    description: 'Intimate wedding reception with romantic lighting',
-    imageUrl: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Corporate Event',
-    description: 'Professional corporate event photography',
-    imageUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Desert Dunes',
-    description: 'Stunning desert landscape photography',
-    imageUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  },
-  {
-    title: 'Runway Fashion',
-    description: 'High-energy runway fashion photography',
-    imageUrl: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?q=80&w=1600&auto=format&fit=crop',
-    category: null,
-    photographer: null
-  }
-];
+let portfolioCounter = 0;
 
-const clientSpaceData = [
-  {
-    name: 'Sarah & John Wedding',
-    key: 'sarah-john-2024',
-    images: [
-      'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&auto=format&fit=crop'
-    ],
-    admin: null
-  },
-  {
-    name: 'Corporate Conference 2024',
-    key: 'corp-conf-2024',
-    images: [
-      'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1200&auto=format&fit=crop'
-    ],
-    admin: null
-  },
-  {
-    name: 'Fashion Portfolio',
-    key: 'fashion-portfolio-2024',
-    images: [
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop'
-    ],
-    admin: null
-  },
-  {
-    name: 'Nature Collection',
-    key: 'nature-collection-2024',
-    images: [
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?q=80&w=1200&auto=format&fit=crop'
-    ],
-    admin: null
-  }
-];
+const getPortfolioData = (adminId, categoryId) => {
+  portfolioCounter++;
+  const timestamp = Date.now();
+  return {
+    title: `Sample Portfolio ${timestamp}-${portfolioCounter}`,
+    description: 'This is a sample portfolio item with a beautiful image',
+    imageUrl: `https://picsum.photos/seed/${Math.random()}/800/600`,
+    category: categoryId,
+    photographer: adminId
+  };
+};
 
+const getClientSpaceData = (adminId, index) => ({
+  name: `Client Project ${index + 1}`,
+  key: `client${index + 1}key`,
+  admin: adminId,
+  images: [
+    'https://picsum.photos/seed/1/800/600',
+    'https://picsum.photos/seed/2/800/600',
+    'https://picsum.photos/seed/3/800/600'
+  ]
+});
 
 const seedAdmins = async () => {
   try {
-    console.log('Seeding admins...');
-    const admins = [];
-    
-    for (const admin of adminData) {
-      const hashedPassword = await bcrypt.hash(admin.password, 10);
-      const newAdmin = new Admin({
-        email: admin.email,
-        password: hashedPassword,
-        isVerified: admin.isVerified
-      });
-      admins.push(await newAdmin.save());
+    await Admin.deleteMany({});
+    console.log('Cleared existing admin data');
+
+    const createdAdmins = [];
+    for (const adminInfo of adminData) {
+      const admin = await Admin.create(adminInfo);
+      createdAdmins.push(admin);
     }
     
-    console.log(` ${admins.length} admins created successfully`);
-    return admins;
+    console.log(`Seeded ${createdAdmins.length} admins`);
+    return createdAdmins;
   } catch (error) {
     console.error('Error seeding admins:', error);
     throw error;
@@ -239,16 +99,12 @@ const seedAdmins = async () => {
 
 const seedCategories = async () => {
   try {
-    console.log('Seeding categories...');
-    const categories = [];
-    
-    for (const category of categoryData) {
-      const newCategory = new Category(category);
-      categories.push(await newCategory.save());
-    }
-    
-    console.log(` ${categories.length} categories created successfully`);
-    return categories;
+    await Category.deleteMany({});
+    console.log('Cleared existing category data');
+
+    const createdCategories = await Category.insertMany(categoryData);
+    console.log(`Seeded ${createdCategories.length} categories`);
+    return createdCategories;
   } catch (error) {
     console.error('Error seeding categories:', error);
     throw error;
@@ -257,27 +113,41 @@ const seedCategories = async () => {
 
 const seedPortfolios = async (admins, categories) => {
   try {
-    console.log('Seeding portfolios...');
+    portfolioCounter = 0;
+    
+    await Portfolio.deleteMany({});
+    console.log('Cleared existing portfolio data');
+
     const portfolios = [];
     
-    for (let i = 0; i < portfolioData.length; i++) {
-      const portfolio = portfolioData[i];
-      const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-      const randomAdmin = admins[Math.floor(Math.random() * admins.length)];
-      
-      const newPortfolio = new Portfolio({
-        title: portfolio.title,
-        description: portfolio.description,
-        imageUrl: portfolio.imageUrl,
-        category: randomCategory._id,
-        photographer: randomAdmin._id
-      });
-      
-      portfolios.push(await newPortfolio.save());
+    for (const admin of admins) {
+      for (const category of categories) {
+        const count = Math.floor(Math.random() * 6) + 5; // 5-10 items
+        for (let i = 0; i < count; i++) {
+          portfolios.push(getPortfolioData(admin._id, category._id));
+        }
+      }
+    }
+
+    // Insert portfolios one by one to handle any potential duplicates gracefully
+    const createdPortfolios = [];
+    for (const portfolio of portfolios) {
+      try {
+        const createdPortfolio = await Portfolio.create(portfolio);
+        createdPortfolios.push(createdPortfolio);
+      } catch (error) {
+        if (error.code === 11000) {
+          // Duplicate key error - skip this portfolio
+          console.log(`Skipping duplicate portfolio: ${portfolio.title}`);
+          continue;
+        } else {
+          throw error;
+        }
+      }
     }
     
-    console.log(`✅ ${portfolios.length} portfolios created successfully`);
-    return portfolios;
+    console.log(`Seeded ${createdPortfolios.length} portfolio items`);
+    return createdPortfolios;
   } catch (error) {
     console.error('Error seeding portfolios:', error);
     throw error;
@@ -286,27 +156,34 @@ const seedPortfolios = async (admins, categories) => {
 
 const seedClientSpaces = async (admins) => {
   try {
-    console.log('Seeding client spaces...');
+    await ClientSpace.deleteMany({});
+    console.log('Cleared existing client space data');
+
     const clientSpaces = [];
     
-    for (let i = 0; i < clientSpaceData.length; i++) {
-      const clientSpace = clientSpaceData[i];
-      const randomAdmin = admins[Math.floor(Math.random() * admins.length)];
-      
-      const newClientSpace = new ClientSpace({
-        name: clientSpace.name,
-        key: clientSpace.key,
-        images: clientSpace.images,
-        admin: randomAdmin._id
-      });
-      
-      clientSpaces.push(await newClientSpace.save());
+    for (const admin of admins) {
+      const count = Math.floor(Math.random() * 3) + 2; 
+      for (let i = 0; i < count; i++) {
+        const spaceData = getClientSpaceData(admin._id, i);
+        clientSpaces.push(spaceData);
+      }
     }
+
+    const createdSpaces = await ClientSpace.insertMany(clientSpaces);
+    console.log(`Seeded ${createdSpaces.length} client spaces`);
     
-    console.log(`✅ ${clientSpaces.length} client spaces created successfully`);
-    return clientSpaces;
+    console.log('\nClient Space Access Information:');
+    createdSpaces.forEach((space, index) => {
+      const admin = admins.find(a => a._id.toString() === space.admin.toString());
+      console.log(`\nClient Space ${index + 1}:`);
+      console.log(`Name: ${space.name}`);
+      console.log(`Admin: ${admin.email}`);
+      console.log(`Key: ${space.key}`); 
+    });
+    
+    return createdSpaces;
   } catch (error) {
-    console.error('❌ Error seeding client spaces:', error);
+    console.error('Error seeding client spaces:', error);
     throw error;
   }
 };
@@ -315,41 +192,34 @@ const seedDatabase = async () => {
   try {
     await connectDB();
     
-    console.log('  Clearing existing data...');
-    await Admin.deleteMany({});
-    await Category.deleteMany({});
-    await Portfolio.deleteMany({});
-    await ClientSpace.deleteMany({});
-    console.log(' Database cleared');
+    console.log('\nStarting database seeding...');
     
-    // Seed data in order
     const admins = await seedAdmins();
     const categories = await seedCategories();
-    const portfolios = await seedPortfolios(admins, categories);
-    const clientSpaces = await seedClientSpaces(admins);
+    await seedPortfolios(admins, categories);
+    await seedClientSpaces(admins);
     
-    console.log('\n🎉 Database seeding completed successfully!');
-    console.log(`📊 Summary:`);
-    console.log(`   - Admins: ${admins.length}`);
-    console.log(`   - Categories: ${categories.length}`);
-    console.log(`   - Portfolios: ${portfolios.length}`);
-    console.log(`   - Client Spaces: ${clientSpaces.length}`);
-    
-    console.log('\n🔑 Admin credentials:');
-    admins.forEach(admin => {
-      console.log(`   Email: ${admin.email} | Password: ${adminData.find(a => a.email === admin.email).password}`);
+    console.log(' Database seeding completed successfully!');
+    console.log('You can now log in with any of these admin accounts:');
+    adminData.forEach(admin => {
+      console.log(`Email: ${admin.email} | Password: ${admin.password}`);
     });
     
     process.exit(0);
   } catch (error) {
-    console.error('Seeding failed:', error);
+    console.error(' Error seeding database:', error);
     process.exit(1);
   }
 };
-
 
 if (require.main === module) {
   seedDatabase();
 }
 
-module.exports = { seedDatabase };
+module.exports = {
+  seedDatabase,
+  seedAdmins,
+  seedCategories,
+  seedPortfolios,
+  seedClientSpaces
+};

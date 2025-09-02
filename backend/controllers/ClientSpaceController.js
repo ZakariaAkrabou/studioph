@@ -94,6 +94,9 @@ exports.accessClientSpace = async (req, res) => {
 
 exports.getAllSpaces = async (req, res) => {
   try {
+    if (!req.admin) {
+      return res.status(401).json({ success: false, message: "Not authorized" });
+    }
     const spaces = await ClientSpace.find({ admin: req.admin._id }).sort({
       createdAt: -1,
     });
@@ -109,6 +112,23 @@ exports.getAllSpaces = async (req, res) => {
       message: "Something went wrong",
       error: err.message,
     });
+  }
+};
+
+exports.getPublicSpaces = async (_req, res) => {
+  try {
+    const spaces = await ClientSpace.find({}).sort({ createdAt: -1 });
+    const publicSpaces = spaces.map((s) => ({
+      _id: s._id,
+      name: s.name,
+      images: s.images,
+      cover: s.images?.[0] || null,
+      createdAt: s.createdAt,
+    }));
+    res.status(200).json({ success: true, spaces: publicSpaces });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Something went wrong", error: err.message });
   }
 };
 
@@ -151,7 +171,6 @@ exports.deleteSpace = async (req, res) => {
   res.status(200).json({  message: "Space deleted" });
 };
 
-// Remove a single image by index from a client space (does not delete from Cloudinary)
 exports.removeImage = async (req, res) => {
   try {
     const space = await ClientSpace.findById(req.params.id);
@@ -173,7 +192,6 @@ exports.removeImage = async (req, res) => {
   }
 };
 
-// Replace a single image by index with a newly uploaded image
 exports.replaceImage = async (req, res) => {
   try {
     const space = await ClientSpace.findById(req.params.id);

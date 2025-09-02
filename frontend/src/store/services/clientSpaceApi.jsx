@@ -15,6 +15,11 @@ export const clientSpaceApi = createApi({
   }),
   tagTypes: ['ClientSpace'],
   endpoints: (builder) => ({
+    getPublicSpaces: builder.query({
+      query: () => ({ url: '/client-space/public', method: 'GET' }),
+      transformResponse: (response) => response?.spaces || [],
+      providesTags: [{ type: 'ClientSpace', id: 'PUBLIC' }],
+    }),
     getSpaces: builder.query({
       query: () => ({ url: '/client-space/all-space', method: 'GET' }),
       transformResponse: (response) => response?.spaces || [],
@@ -79,6 +84,14 @@ export const clientSpaceApi = createApi({
       },
       invalidatesTags: (_r, _e, { id }) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
     }),
+    accessSpace: builder.mutation({
+      query: ({ id, key }) => ({
+        url: `/client-space/${id}/access`,
+        method: 'POST',
+        body: { key },
+      }),
+      transformResponse: (response) => response,
+    }),
     deleteSpace: builder.mutation({
       query: (id) => ({ url: `/client-space/delete/${id}`, method: 'DELETE' }),
       invalidatesTags: (_r, _e, id) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
@@ -87,11 +100,13 @@ export const clientSpaceApi = createApi({
 });
 
 export const {
+  useGetPublicSpacesQuery,
   useGetSpacesQuery,
   useCreateSpaceMutation,
   useUploadImagesMutation,
   useUpdateSpaceMutation,
   useDeleteImageMutation,
   useReplaceImageMutation,
+  useAccessSpaceMutation,
   useDeleteSpaceMutation,
 } = clientSpaceApi;
