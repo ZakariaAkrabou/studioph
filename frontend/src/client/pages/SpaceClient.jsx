@@ -397,187 +397,189 @@ const SpaceClient = () => {
   }
 
   // Show gallery selection page
-  return (
-    <motion.div 
+    return (
+      <motion.div 
       className="min-h-screen relative z-10"
-      style={{ backgroundColor: BG, color: TEXT }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-    >
-      {/* Hero Section */}
-      <motion.section 
-        className="py-16 sm:py-20"
-        variants={sectionVariants}
-        initial="hidden"
-        animate="visible"
+        style={{ backgroundColor: BG, color: TEXT }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div variants={fadeInUp}>
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6" style={{ backgroundColor: CARD, border: "2px solid rgba(197,164,109,0.3)" }}>
-              <FiGrid className="w-8 h-8" style={{ color: ACCENT }} />
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Client Galleries</h1>
-            <p className="text-lg sm:text-xl mb-8 max-w-3xl mx-auto" style={{ color: MUTED }}>
-              Browse our client galleries. Each gallery is private and requires an access key provided by your photographer.
-            </p>
-          </motion.div>
-        </div>
-      </motion.section>
-
-      <motion.section 
-        className="py-8 sm:py-12 relative z-10"
-        variants={sectionVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
-            variants={containerVariants}
-          >
-            {publicGalleries.map((gallery) => (
-              <motion.div
-                key={gallery.id}
-                className="group cursor-pointer"
-                variants={fadeInUp}
-                whileHover={{ y: -6 }}
-                onClick={() => handleGalleryAccess(gallery)}
-              >
-                <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <div className="relative h-64 sm:h-72 overflow-hidden">
-                    <img 
-                      src={gallery.coverImage} 
-                      alt={gallery.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    
-                    {/* Lock indicator */}
-                    <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                      <FiLock className="w-5 h-5" style={{ color: ACCENT }} />
-                    </div>
-                    
-                    {/* Category badge */}
-                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm" style={{ backgroundColor: `${ACCENT}CC`, color: "#0D0D0D" }}>
-                      {gallery.category}
-                    </div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-opacity-80 transition-colors">{gallery.title}</h3>
-                    <p className="text-sm mb-4 line-clamp-2" style={{ color: MUTED }}>
-                      {gallery.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between text-sm" style={{ color: MUTED }}>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <FiUser className="w-4 h-4" />
-                          <span>{gallery.photographer}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <FiImage className="w-4 h-4" />
-                          <span>{gallery.totalImages}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FiCalendar className="w-4 h-4" />
-                        <span>{new Date(gallery.eventDate).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 pt-4 border-t border-white/10">
-                      <div className="flex items-center justify-center gap-2 text-sm font-medium" style={{ color: ACCENT }}>
-                        <FiKey className="w-4 h-4" />
-                        <span>Access Key Required</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </motion.section>
-
-      {/* Key Modal */}
-      <AnimatePresence>
-        {showKeyModal && selectedGallery && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowKeyModal(false)}
-          >
-            <motion.div
-              className="max-w-md w-full rounded-2xl p-6"
-              style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: "rgba(197,164,109,0.1)", border: "2px solid rgba(197,164,109,0.3)" }}>
-                  <FiLock className="w-6 h-6" style={{ color: ACCENT }} />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Access Required</h3>
-                <p className="text-sm" style={{ color: MUTED }}>
-                  Enter your access key to view <strong>{selectedGallery.title}</strong>
-                </p>
+        {/* Hero Section */}
+        <motion.section 
+          className="py-16 sm:py-20"
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div variants={fadeInUp}>
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6" style={{ backgroundColor: CARD, border: "2px solid rgba(197,164,109,0.3)" }}>
+                <FiGrid className="w-8 h-8" style={{ color: ACCENT }} />
               </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+                Client <span style={{ color: ACCENT }}>Galleries</span>
+              </h1>
+              <p className="text-lg sm:text-xl mb-8 max-w-3xl mx-auto" style={{ color: MUTED }}>
+                Browse our client galleries. Each gallery is private and requires an access key provided by your photographer.
+              </p>
+            </motion.div>
+          </div>
+        </motion.section>
 
-              <form onSubmit={handleModalKeySubmit} className="space-y-4">
-                <div>
-                  <div className="relative">
-                    <FiKey className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: MUTED }} />
-                    <input
-                      type="text"
-                      value={accessKey}
-                      onChange={(e) => setAccessKey(e.target.value)}
-                      placeholder="Enter access key"
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:border-opacity-80"
-                      style={{ 
-                        backgroundColor: BG, 
-                        borderColor: error ? "#ef4444" : "rgba(255,255,255,0.1)",
-                        color: TEXT
-                      }}
-                    />
+        <motion.section 
+        className="py-8 sm:py-12 relative z-10"
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+              variants={containerVariants}
+            >
+            {publicGalleries.map((gallery) => (
+                <motion.div
+                  key={gallery.id}
+                  className="group cursor-pointer"
+                  variants={fadeInUp}
+                  whileHover={{ y: -6 }}
+                  onClick={() => handleGalleryAccess(gallery)}
+                >
+                  <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <div className="relative h-64 sm:h-72 overflow-hidden">
+                      <img 
+                        src={gallery.coverImage} 
+                        alt={gallery.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      
+                      {/* Lock indicator */}
+                      <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                        <FiLock className="w-5 h-5" style={{ color: ACCENT }} />
+                      </div>
+                      
+                      {/* Category badge */}
+                      <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm" style={{ backgroundColor: `${ACCENT}CC`, color: "#0D0D0D" }}>
+                        {gallery.category}
+                      </div>
+                    </div>
+                    
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-opacity-80 transition-colors">{gallery.title}</h3>
+                      <p className="text-sm mb-4 line-clamp-2" style={{ color: MUTED }}>
+                        {gallery.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-sm" style={{ color: MUTED }}>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1">
+                            <FiUser className="w-4 h-4" />
+                            <span>{gallery.photographer}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <FiImage className="w-4 h-4" />
+                            <span>{gallery.totalImages}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <FiCalendar className="w-4 h-4" />
+                          <span>{new Date(gallery.eventDate).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        <div className="flex items-center justify-center gap-2 text-sm font-medium" style={{ color: ACCENT }}>
+                          <FiKey className="w-4 h-4" />
+                          <span>Access Key Required</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  {error && (
-                    <motion.p 
-                      className="text-red-400 text-sm mt-2"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      {error}
-                    </motion.p>
-                  )}
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Key Modal */}
+        <AnimatePresence>
+          {showKeyModal && selectedGallery && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowKeyModal(false)}
+            >
+              <motion.div
+                className="max-w-md w-full rounded-2xl p-6"
+                style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: "rgba(197,164,109,0.1)", border: "2px solid rgba(197,164,109,0.3)" }}>
+                    <FiLock className="w-6 h-6" style={{ color: ACCENT }} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">Access Required</h3>
+                  <p className="text-sm" style={{ color: MUTED }}>
+                    Enter your access key to view <strong>{selectedGallery.title}</strong>
+                  </p>
                 </div>
 
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowKeyModal(false)}
-                    className="flex-1 py-3 px-4 rounded-xl font-medium border-2 transition-all duration-300"
-                    style={{ borderColor: "rgba(255,255,255,0.2)", color: MUTED }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!accessKey.trim()}
-                    className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50"
-                    style={{ backgroundColor: ACCENT, color: "#0D0D0D" }}
-                  >
-                    Access Gallery
-                  </button>
-                </div>
-              </form>
+                <form onSubmit={handleModalKeySubmit} className="space-y-4">
+                  <div>
+                    <div className="relative">
+                      <FiKey className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: MUTED }} />
+                      <input
+                        type="text"
+                        value={accessKey}
+                        onChange={(e) => setAccessKey(e.target.value)}
+                        placeholder="Enter access key"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:border-opacity-80"
+                        style={{ 
+                          backgroundColor: BG, 
+                          borderColor: error ? "#ef4444" : "rgba(255,255,255,0.1)",
+                          color: TEXT
+                        }}
+                      />
+                    </div>
+                    {error && (
+                      <motion.p 
+                        className="text-red-400 text-sm mt-2"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                      >
+                        {error}
+                      </motion.p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowKeyModal(false)}
+                      className="flex-1 py-3 px-4 rounded-xl font-medium border-2 transition-all duration-300"
+                      style={{ borderColor: "rgba(255,255,255,0.2)", color: MUTED }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={!accessKey.trim()}
+                      className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50"
+                      style={{ backgroundColor: ACCENT, color: "#0D0D0D" }}
+                    >
+                      Access Gallery
+                    </button>
+                  </div>
+                </form>
             </motion.div>
           </motion.div>
         )}

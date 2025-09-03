@@ -23,6 +23,10 @@ export default function ClientSpacesPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", key: "", cover: null });
   const [editCoverPreview, setEditCoverPreview] = useState(null);
+  const [showAddImages, setShowAddImages] = useState(false);
+  const [addImagesForm, setAddImagesForm] = useState({ files: [] });
+  const [addImagesPreviews, setAddImagesPreviews] = useState([]);
+  const [currentSpaceForAdd, setCurrentSpaceForAdd] = useState(null);
 
   const filtered = useMemo(() => {
     return spaces.filter((s) => s.name.toLowerCase().includes(query.toLowerCase()))
@@ -150,11 +154,41 @@ export default function ClientSpacesPage() {
   };
 
   const openEdit = (space) => {
-    setEditForm({ name: space.name, key: space.keyHint, cover: null });
+    setEditForm({ name: space.name, key: space.key || "", cover: null });
     setEditCoverPreview(space.cover || space.images?.[0] || null);
-    const idx = filtered.findIndex((s) => s._id === space._id);
-    if (idx >= 0) setActiveSpaceIdx(idx);
     setShowEdit(true);
+  };
+
+  const openAddImages = (space) => {
+    setCurrentSpaceForAdd(space);
+    setAddImagesForm({ files: [] });
+    setAddImagesPreviews([]);
+    setShowAddImages(true);
+  };
+
+  const handleAddImagesChange = (e) => {
+    const { files } = e.target;
+    if (files && files.length) {
+      const list = Array.from(files);
+      setAddImagesForm({ files: list });
+      setAddImagesPreviews(list.map((f) => URL.createObjectURL(f)));
+    }
+  };
+
+  const handleAddImages = async (e) => {
+    e.preventDefault();
+    if (!currentSpaceForAdd || addImagesForm.files.length === 0) return;
+    
+    try {
+      await uploadImages({ id: currentSpaceForAdd._id, files: addImagesForm.files }).unwrap();
+      toast.success(`${addImagesForm.files.length} image${addImagesForm.files.length > 1 ? 's' : ''} added successfully`);
+      setShowAddImages(false);
+      setAddImagesForm({ files: [] });
+      setAddImagesPreviews([]);
+      setCurrentSpaceForAdd(null);
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to add images');
+    }
   };
 
   const handleEditChange = (e) => {
@@ -171,16 +205,29 @@ export default function ClientSpacesPage() {
   const saveEdit = async (e) => {
     e.preventDefault();
     const current = filtered[activeSpaceIdx];
+    
+    // Close modal immediately
+    setShowEdit(false);
+    setEditForm({ name: "", key: "", cover: null });
+    setEditCoverPreview(null);
+    
     try {
       await updateSpace({ id: current._id, name: editForm.name, key: editForm.key }).unwrap();
       if (editForm.cover) {
-        await uploadImages({ id: current._id, files: [editForm.cover] }).unwrap();
+        // If there's an existing cover, replace it at index 0, otherwise upload as new image
+        if (current.cover || (current.images && current.images.length > 0)) {
+          await replaceImage({ id: current._id, index: 0, file: editForm.cover }).unwrap();
+          toast.success('Cover image updated successfully');
+        } else {
+          await uploadImages({ id: current._id, files: [editForm.cover] }).unwrap();
+          toast.success('Cover image added successfully');
+        }
+      } else {
+        toast.success('Space updated successfully');
       }
-      setShowEdit(false);
-      toast.success('Space updated');
     } catch (err) {
       console.error(err);
-      toast.error(err?.data?.message || 'Failed to update');
+      toast.error(err?.data?.message || 'Failed to update space');
     }
   };
 
@@ -291,6 +338,7 @@ export default function ClientSpacesPage() {
                 </div>
                 <div className="mt-auto pt-3 flex items-center gap-2 sm:justify-end">
                   <button onClick={()=>openPreview(filtered.findIndex(fs=>fs._id===s._id))} className="cursor-pointer w-full sm:w-auto px-3 py-2 text-xs rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800">Preview</button>
+                  <button onClick={()=>openAddImages(s)} className="cursor-pointer w-full sm:w-auto px-3 py-2 text-xs rounded-md bg-green-50 text-green-600 hover:bg-green-100">Add Images</button>
                   <button onClick={()=>openEdit(s)} className="cursor-pointer w-full sm:w-auto px-3 py-2 text-xs rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800">Edit</button>
                   <button onClick={()=>confirmDelete(s._id)} className="cursor-pointer w-full sm:w-auto px-3 py-2 text-xs rounded-md bg-red-50 text-red-600 hover:bg-red-100">Delete</button>
                 </div>
@@ -390,6 +438,30 @@ export default function ClientSpacesPage() {
                     )}
                     {/* Per-image actions */}
                     <div className="absolute right-2 top-2 sm:right-3 sm:top-3 flex gap-2">
+                      <button
+                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-green-600 text-white shadow flex items-center justify-center hover:bg-green-700"
+                        title="Add new images"
+                        onClick={() => {
+                          const current = filtered[activeSpaceIdx];
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.multiple = true;
+                          input.onchange = async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (files.length === 0) return;
+                            try {
+                              await uploadImages({ id: current._id, files }).unwrap();
+                              toast.success(`${files.length} image${files.length > 1 ? 's' : ''} added successfully`);
+                            } catch {
+                              toast.error('Failed to add images');
+                            }
+                          };
+                          input.click();
+                        }}
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" strokeWidth="2"/></svg>
+                      </button>
                       <button
                         className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white text-gray-800 shadow flex items-center justify-center hover:bg-gray-100"
                         title="Replace image"
@@ -513,8 +585,72 @@ export default function ClientSpacesPage() {
           </div>
         </div>
       </div>
+
+      {/* Add Images Modal */}
+      <div className={`fixed inset-0 z-50 ${showAddImages ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+        <div className={`absolute inset-0 bg-black/40 transition-opacity ${showAddImages ? 'opacity-100' : 'opacity-0'}`} onClick={()=>setShowAddImages(false)} />
+        <div className={`absolute top-0 right-0 h-full w-full sm:max-w-md bg-white shadow-2xl border-l transform transition-transform ${showAddImages ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="h-full flex flex-col">
+            <div className="px-5 py-4 border-b flex items-center justify-between">
+              <div>
+                <h2 className="font-semibold text-gray-900">Add Images</h2>
+                <p className="text-xs text-gray-500">Add new images to {currentSpaceForAdd?.name}</p>
+              </div>
+              <button onClick={()=>setShowAddImages(false)} className="p-2 rounded hover:bg-gray-100">
+                <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" strokeWidth="2"/></svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleAddImages} className="p-5 space-y-4 overflow-y-auto flex-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select Images</label>
+                <div className="space-y-2">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    multiple 
+                    onChange={handleAddImagesChange} 
+                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" 
+                  />
+                  {addImagesPreviews.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                      {addImagesPreviews.map((src, i) => (
+                        <div key={i} className="relative group">
+                          <img src={src} alt={`preview-${i}`} className="w-full h-20 object-cover rounded border" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newFiles = addImagesForm.files.filter((_, idx) => idx !== i);
+                              const newPreviews = addImagesPreviews.filter((_, idx) => idx !== i);
+                              setAddImagesForm({ files: newFiles });
+                              setAddImagesPreviews(newPreviews);
+                            }}
+                            className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" strokeWidth="2"/></svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500">You can select multiple images at once. JPG, PNG up to ~5MB each.</p>
+                </div>
+              </div>
+              
+              <div className="pt-2 flex items-center gap-2 mt-auto">
+                <button type="button" onClick={()=>setShowAddImages(false)} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</button>
+                <button 
+                  type="submit" 
+                  disabled={isUploading || addImagesForm.files.length === 0} 
+                  className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow disabled:opacity-50"
+                >
+                  {isUploading ? 'Adding...' : `Add ${addImagesForm.files.length} Image${addImagesForm.files.length !== 1 ? 's' : ''}`}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-
-

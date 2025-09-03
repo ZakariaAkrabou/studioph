@@ -5,6 +5,7 @@ import Dashboard from "../admin/pages/Dashboard";
 import Category from "../admin/pages/Category";
 import Portfolio from "../admin/pages/Portfolio";
 import Client from "../admin/pages/Client";
+import Settings from "../admin/pages/Settings";
 
 export default function AdminRoutes() {
   return (
@@ -14,7 +15,7 @@ export default function AdminRoutes() {
         <Route path="portfolio" element={<Portfolio />} />
         <Route path="categories" element={ <Category /> } />
         <Route path="client-spaces" element={<Client />} />
-        <Route path="settings" element={<div className="p-6 bg-white rounded-2xl border">Settings Page</div>} />
+        <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>
