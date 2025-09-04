@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, Suspense, lazy, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiChevronLeft, FiChevronRight, FiSearch, FiLoader } from "react-icons/fi";
 import { useGetPortfoliosQuery } from "../../store/services/portfolioApi";
@@ -188,6 +189,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 };
 
 const Gallery = () => {
+  const { t } = useTranslation();
   const [active, setActive] = useState("all");
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [isSlideshow, setIsSlideshow] = useState(false);
@@ -212,7 +214,7 @@ const Gallery = () => {
 
   // Transform categories for filter
   const categoriesList = useMemo(() => {
-    const allCategories = [{ key: "all", label: "All" }];
+    const allCategories = [{ key: "all", label: t('gallery.all') }];
     
     categories.forEach(cat => {
       allCategories.push({
@@ -301,7 +303,7 @@ const Gallery = () => {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <FiLoader className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: ACCENT }} />
-            <p className="text-lg" style={{ color: MUTED }}>Loading gallery...</p>
+            <p className="text-lg" style={{ color: MUTED }}>{t('gallery.loading')}</p>
           </div>
         </div>
       </div>
@@ -314,8 +316,8 @@ const Gallery = () => {
       <div className="min-h-screen" style={{ backgroundColor: BG, color: TEXT }}>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <p className="text-xl mb-4">Failed to load gallery</p>
-            <p className="text-sm" style={{ color: MUTED }}>Please try refreshing the page</p>
+            <p className="text-xl mb-4">{t('gallery.failedTitle')}</p>
+            <p className="text-sm" style={{ color: MUTED }}>{t('gallery.failedHint')}</p>
           </div>
         </div>
       </div>
@@ -339,7 +341,7 @@ const Gallery = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            Gallery
+            {t('gallery.title')}
           </motion.h1>
           <motion.p 
             className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed"
@@ -348,7 +350,7 @@ const Gallery = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            Discover stunning moments captured through our lens
+            {t('gallery.subtitle')}
           </motion.p>
         </div>
       </motion.header>
@@ -395,7 +397,7 @@ const Gallery = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            Showing <span className="font-semibold" style={{ color: ACCENT }}>{paginatedPhotos.length}</span> of <span className="font-semibold" style={{ color: ACCENT }}>{filtered.length}</span> {filtered.length === 1 ? 'photo' : 'photos'}
+            {t('gallery.showing')} <span className="font-semibold" style={{ color: ACCENT }}>{paginatedPhotos.length}</span> {t('gallery.of')} <span className="font-semibold" style={{ color: ACCENT }}>{filtered.length}</span> {filtered.length === 1 ? t('gallery.photo') : t('gallery.photos')}
           </motion.div>
         </div>
       </motion.section>
@@ -406,8 +408,8 @@ const Gallery = () => {
           {filtered.length === 0 ? (
             <div className="text-center py-32">
               <FiSearch className="w-20 h-20 mx-auto mb-8" style={{ color: MUTED }} />
-              <h3 className="text-3xl font-semibold mb-4">No photos found</h3>
-              <p className="text-xl" style={{ color: MUTED }}>Try selecting a different category</p>
+              <h3 className="text-3xl font-semibold mb-4">{t('gallery.noPhotos')}</h3>
+              <p className="text-xl" style={{ color: MUTED }}>{t('gallery.tryDifferent')}</p>
             </div>
           ) : (
             <Suspense fallback={<SkeletonLoader />}>

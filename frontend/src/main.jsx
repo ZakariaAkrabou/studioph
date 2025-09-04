@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast'
 import './index.css'
 import App from './App.jsx'
 import store from './store/store.jsx'
+import './i18n.js'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FiMenu, FiX, FiCamera } from "react-icons/fi";
+import { FiMenu, FiX, FiCamera, FiGlobe } from "react-icons/fi";
+import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const [language, setLanguage] = useState(() => localStorage.getItem("lang") || "en");
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    localStorage.setItem("lang", language);
+    i18n.changeLanguage(language);
+  }, [language]);
 
   const navItems = [
-    { to: "/", label: "Home", end: true },
-    { to: "/gallery", label: "Gallery" },
-    { to: "/client", label: "Client Area" },
-    { to: "/about", label: "About" },
-    { to: "/contact", label: "Contact" },
+    { to: "/", label: t('nav.home'), end: true },
+    { to: "/gallery", label: t('nav.gallery') },
+    { to: "/client", label: t('nav.client') },
+    { to: "/about", label: t('nav.about') },
+    { to: "/contact", label: t('nav.contact') },
   ];
 
   return (
@@ -46,6 +55,46 @@ export default function Navbar() {
                 {item.label}
               </NavLink>
             ))}
+
+            {/* Language Selector */}
+            <div className="relative ml-2">
+              <button
+                onClick={() => setLanguageMenuOpen((v) => !v)}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-[#B3B3B3] hover:text-[#FFD369] hover:bg-white/5 border border-transparent transition-all"
+              >
+                <FiGlobe className="w-4 h-4" />
+                <span className="hidden lg:inline">{language === "en" ? t('nav.english') : t('nav.french')}</span>
+                <span className="inline lg:hidden">{language === "en" ? "EN" : "FR"}</span>
+              </button>
+              {languageMenuOpen && (
+                <div className="absolute right-0 mt-2 w-36 rounded-md bg-[#141414] border border-white/10 shadow-lg z-50">
+                  <button
+                    onClick={() => {
+                      setLanguage("en");
+                      setLanguageMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm rounded-t-md transition-colors ${
+                      language === "en" ? "bg-white/5 text-white" : "text-[#B3B3B3] hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="text-base">🇬🇧</span>
+                    <span>{t('nav.english')}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLanguage("fr");
+                      setLanguageMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm rounded-b-md transition-colors ${
+                      language === "fr" ? "bg-white/5 text-white" : "text-[#B3B3B3] hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="text-base">🇫🇷</span>
+                    <span>{t('nav.french')}</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -80,6 +129,31 @@ export default function Navbar() {
                   {item.label}
                 </NavLink>
               ))}
+
+              {/* Mobile Language Selector */}
+              <div className="pt-2 border-t border-white/10">
+                <p className="px-4 pb-1 text-xs uppercase tracking-wide text-[#808080]">{t('nav.language')}</p>
+                <div className="flex gap-2 px-2">
+                  <button
+                    onClick={() => setLanguage("en")}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm border transition-all ${
+                      language === "en" ? "text-[#0D0D0D] bg-[#C5A46D] border-[#C5A46D]" : "text-[#B3B3B3] border-white/10 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="text-base">🇬🇧</span>
+                    <span>{t('nav.english')}</span>
+                  </button>
+                  <button
+                    onClick={() => setLanguage("fr")}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm border transition-all ${
+                      language === "fr" ? "text-[#0D0D0D] bg-[#C5A46D] border-[#C5A46D]" : "text-[#B3B3B3] border-white/10 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="text-base">🇫🇷</span>
+                    <span>{t('nav.french')}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

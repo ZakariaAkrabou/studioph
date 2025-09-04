@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -71,6 +72,7 @@ const containerVariants = {
 };
 
 export default function HomePage() {
+  const { t, i18n } = useTranslation();
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useGetCategoriesQuery();
   const { data: portfolios = [], isLoading: portfoliosLoading, error: portfoliosError } = useGetPortfoliosQuery();
 
@@ -155,8 +157,8 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           >
-            Capture Life's
-            <span className="block" style={{ color: ACCENT }}>Beautiful Moments</span>
+            {t('home.hero.title1')}
+            <span className="block" style={{ color: ACCENT }}>{t('home.hero.title2')}</span>
           </motion.h1>
           
           <motion.p 
@@ -166,7 +168,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           >
-            Professional photography services that tell your unique story through stunning visuals. From weddings to portraits, we create timeless memories that last forever.
+            {t('home.hero.subtitle')}
           </motion.p>
 
           <motion.div 
@@ -180,7 +182,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-black transition-all duration-300 hover:scale-105 hover:shadow-lg"
               style={{ backgroundColor: ACCENT }}
             >
-              Explore Gallery
+              {t('home.hero.explore')}
               <FiArrowRight className="w-4 h-4" />
             </Link>
             <Link
@@ -188,7 +190,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold border-2 transition-all duration-300 hover:bg-white/10"
               style={{ borderColor: 'rgba(255,255,255,0.3)', color: TEXT }}
             >
-              Book Session
+              {t('home.hero.book')}
               <FiCamera className="w-4 h-4" />
             </Link>
           </motion.div>
@@ -242,9 +244,9 @@ export default function HomePage() {
             className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-2"
             variants={fadeInUp}
           >
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Discover by Category</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">{t('home.categories.title')}</h2>
             <Link to="/gallery" className="text-sm sm:text-base transition-colors hover:opacity-80" style={{ color: MUTED }}>
-              Browse all →
+              {t('home.categories.browseAll')}
             </Link>
           </motion.div>
 
@@ -255,7 +257,7 @@ export default function HomePage() {
             >
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{ borderColor: ACCENT }}></div>
-                <p style={{ color: MUTED }}>Loading categories...</p>
+                <p style={{ color: MUTED }}>{t('home.categories.loading')}</p>
               </div>
             </motion.div>
           ) : categoriesError ? (
@@ -263,7 +265,7 @@ export default function HomePage() {
               className="text-center py-12"
               variants={fadeInUp}
             >
-              <p style={{ color: "#ff6b6b" }}>Failed to load categories. Please try again later.</p>
+              <p style={{ color: "#ff6b6b" }}>{t('home.categories.failed')}</p>
             </motion.div>
           ) : (
             <motion.div 
@@ -291,13 +293,15 @@ export default function HomePage() {
                   </div>
                   <div className="p-3 sm:p-4">
                     <h3 className="font-semibold text-sm sm:text-base mb-1">{cat.name}</h3>
-                    <p className="text-xs sm:text-sm mb-3" style={{ color: MUTED }}>Explore {cat.name.toLowerCase()}</p>
+                    <p className="text-xs sm:text-sm mb-3" style={{ color: MUTED }}>
+                      {t('home.categories.explore', { name: cat.name.toLowerCase() })}
+                    </p>
                     <Link
                       to={`/gallery?category=${cat._id}`}
                       className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium transition-colors duration-300 group-hover:translate-x-1"
                       style={{ color: HOVER }}
                     >
-                      View Collection
+                      {t('home.categories.viewCollection')}
                       <FiArrowRight className="w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </Link>
                   </div>
@@ -314,9 +318,9 @@ export default function HomePage() {
             className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-2"
             variants={fadeInUp}
           >
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Featured Galleries</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">{t('home.featured.title')}</h2>
             <Link to="/gallery" className="text-sm sm:text-base transition-colors hover:opacity-80" style={{ color: MUTED }}>
-              View all →
+              {t('home.featured.viewAll')}
             </Link>
           </motion.div>
 
@@ -327,7 +331,7 @@ export default function HomePage() {
             >
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{ borderColor: ACCENT }}></div>
-                <p style={{ color: MUTED }}>Loading featured galleries...</p>
+                <p style={{ color: MUTED }}>{t('home.featured.loading')}</p>
               </div>
             </motion.div>
           ) : portfoliosError ? (
@@ -335,14 +339,14 @@ export default function HomePage() {
               className="text-center py-12"
               variants={fadeInUp}
             >
-              <p style={{ color: "#ff6b6b" }}>Failed to load featured galleries. Please try again later.</p>
+              <p style={{ color: "#ff6b6b" }}>{t('home.featured.failed')}</p>
             </motion.div>
           ) : featuredGalleries.length === 0 ? (
             <motion.div 
               className="text-center py-12"
               variants={fadeInUp}
             >
-              <p style={{ color: MUTED }}>No featured galleries available at the moment.</p>
+              <p style={{ color: MUTED }}>{t('home.featured.empty')}</p>
             </motion.div>
           ) : (
             <motion.div 
@@ -383,7 +387,7 @@ export default function HomePage() {
                         className="inline-flex items-center gap-1 text-sm font-medium transition-all duration-300 group-hover:translate-x-1"
                         style={{ color: HOVER }}
                       >
-                        View Gallery
+                        {t('home.featured.viewGallery')}
                         <FiArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </Link>
                     </div>
@@ -413,7 +417,7 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <FiCamera className="w-4 h-4" style={{ color: ACCENT }} />
-              <span className="text-sm font-medium">Ready to get started?</span>
+              <span className="text-sm font-medium">{t('home.cta.ready')}</span>
             </motion.div>
             
             <motion.h3 
@@ -422,8 +426,8 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              Let's Create Something
-              <span className="block" style={{ color: ACCENT }}>Beautiful Together</span>
+              {t('home.cta.letsCreate')}
+              <span className="block" style={{ color: ACCENT }}>{t('home.cta.beautifulTogether')}</span>
             </motion.h3>
             
             <motion.p 
@@ -433,7 +437,7 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              Whether you're planning your dream wedding, need professional portraits, or want to capture special moments, we're here to bring your vision to life.
+              {t('home.cta.description')}
             </motion.p>
             
             <motion.div 
@@ -447,7 +451,7 @@ export default function HomePage() {
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-black transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 style={{ backgroundColor: ACCENT }}
               >
-                Book Your Session
+                {t('home.cta.bookSession')}
                 <FiArrowRight className="w-4 h-4" />
               </Link>
               <Link 
@@ -455,7 +459,7 @@ export default function HomePage() {
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold border-2 transition-all duration-300 hover:bg-white/10"
                 style={{ borderColor: 'rgba(255,255,255,0.3)', color: TEXT }}
               >
-                View Our Work
+                {t('home.cta.viewWork')}
                 <FiEye className="w-4 h-4" />
               </Link>
             </motion.div>

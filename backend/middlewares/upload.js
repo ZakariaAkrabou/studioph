@@ -10,7 +10,6 @@ exports.singleUpload = (fieldName, folder) => [
   async (req, res, next) => {
     try {
       if (!req.file) {
-        // No file uploaded, continue without image processing
         return next();
       }
 

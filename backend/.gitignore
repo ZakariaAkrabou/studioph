@@ -31,4 +31,4 @@ logs/
 # Misc
 *.bak
 *.tmp
-/upload
+/uploads/

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -62,6 +63,7 @@ const containerVariants = {
 };
 
 const SpaceClient = () => {
+  const { t } = useTranslation();
   const { key } = useParams();
   const navigate = useNavigate();
   const [accessKey, setAccessKey] = useState("");
@@ -221,7 +223,7 @@ const SpaceClient = () => {
         <div className="text-center">
           <div className="w-12 h-12 border-2 border-current border-t-transparent rounded-full animate-spin mb-4 mx-auto" style={{ color: ACCENT }} />
           <p className="text-lg">
-            {key ? "Verifying access key..." : "Loading galleries..."}
+            {key ? t('client.verifying') : t('client.loading')}
           </p>
         </div>
       </motion.div>
@@ -293,7 +295,7 @@ const SpaceClient = () => {
               className="flex items-center justify-between mb-8"
               variants={fadeInUp}
             >
-              <h2 className="text-2xl sm:text-3xl font-bold">Your Photo Collection</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold">{t('client.yourCollection')}</h2>
             </motion.div>
 
             <motion.div 
@@ -418,10 +420,10 @@ const SpaceClient = () => {
                 <FiGrid className="w-8 h-8" style={{ color: ACCENT }} />
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-                Client <span style={{ color: ACCENT }}>Galleries</span>
+                {t('client.title', { highlight: t('client.highlight') })}
               </h1>
               <p className="text-lg sm:text-xl mb-8 max-w-3xl mx-auto" style={{ color: MUTED }}>
-                Browse our client galleries. Each gallery is private and requires an access key provided by your photographer.
+                {t('client.description')}
               </p>
             </motion.div>
           </div>
@@ -493,7 +495,7 @@ const SpaceClient = () => {
                       <div className="mt-4 pt-4 border-t border-white/10">
                         <div className="flex items-center justify-center gap-2 text-sm font-medium" style={{ color: ACCENT }}>
                           <FiKey className="w-4 h-4" />
-                          <span>Access Key Required</span>
+                          <span>{t('client.accessKeyRequired')}</span>
                         </div>
                       </div>
                     </div>
@@ -527,9 +529,9 @@ const SpaceClient = () => {
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: "rgba(197,164,109,0.1)", border: "2px solid rgba(197,164,109,0.3)" }}>
                     <FiLock className="w-6 h-6" style={{ color: ACCENT }} />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Access Required</h3>
+                  <h3 className="text-xl font-bold mb-2">{t('client.accessRequired')}</h3>
                   <p className="text-sm" style={{ color: MUTED }}>
-                    Enter your access key to view <strong>{selectedGallery.title}</strong>
+                    {t('client.enterKey')} <strong>{selectedGallery.title}</strong>
                   </p>
                 </div>
 
@@ -541,7 +543,7 @@ const SpaceClient = () => {
                         type="text"
                         value={accessKey}
                         onChange={(e) => setAccessKey(e.target.value)}
-                        placeholder="Enter access key"
+                        placeholder={t('client.enterKey')}
                         className="w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:border-opacity-80"
                         style={{ 
                           backgroundColor: BG, 
@@ -568,7 +570,7 @@ const SpaceClient = () => {
                       className="flex-1 py-3 px-4 rounded-xl font-medium border-2 transition-all duration-300"
                       style={{ borderColor: "rgba(255,255,255,0.2)", color: MUTED }}
                     >
-                      Cancel
+                      {t('client.cancel')}
                     </button>
                     <button
                       type="submit"
@@ -576,7 +578,7 @@ const SpaceClient = () => {
                       className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50"
                       style={{ backgroundColor: ACCENT, color: "#0D0D0D" }}
                     >
-                      Access Gallery
+                      {t('client.accessGallery')}
                     </button>
                   </div>
                 </form>
