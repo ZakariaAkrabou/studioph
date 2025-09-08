@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, Suspense, lazy, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiChevronLeft, FiChevronRight, FiSearch, FiLoader } from "react-icons/fi";
@@ -191,6 +192,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 const Gallery = () => {
   const { t } = useTranslation();
   const [active, setActive] = useState("all");
+  const location = useLocation();
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [isSlideshow, setIsSlideshow] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -213,26 +215,42 @@ const Gallery = () => {
   }, [portfolios]);
 
   // Transform categories for filter
+  const slugify = useCallback((name) =>
+    (name || "")
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-"), []);
+
   const categoriesList = useMemo(() => {
     const allCategories = [{ key: "all", label: t('gallery.all') }];
     
     categories.forEach(cat => {
       allCategories.push({
-        key: cat.name.toLowerCase(),
+        key: slugify(cat.name),
         label: cat.name
       });
     });
     
     return allCategories;
-  }, [categories]);
+  }, [categories, slugify]);
 
   // Filter photos based on active category
   const filtered = useMemo(() => {
     if (active === "all") {
       return transformedPortfolios;
     }
-    return transformedPortfolios.filter((p) => p.category.toLowerCase() === active);
-  }, [active, transformedPortfolios]);
+    return transformedPortfolios.filter((p) => slugify(p.category) === active);
+  }, [active, transformedPortfolios, slugify]);
+
+  // Read category from query string and set active on mount/change
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cat = params.get("category");
+    if (cat) setActive(cat);
+  }, [location.search]);
 
   // Pagination logic
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);

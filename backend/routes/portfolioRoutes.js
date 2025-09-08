@@ -2,11 +2,18 @@ const express = require("express");
 const portfolioController = require("../controllers/PortfolioController");
 const { singleUpload } = require("../middlewares/upload");
 const { protectAdmin } = require("../middlewares/authMiddleware");
+const { handleValidationErrors } = require("../middlewares/validationMiddleware");
+const { validatePortfolioId } = require("../validators/portfolioValidators");
 
 const router = express.Router();
 
 router.get("/all", portfolioController.getAllPortfolios);
-router.get("/image/:id", portfolioController.getPortfolioById);
+router.get(
+  "/image/:id",
+  validatePortfolioId,
+  handleValidationErrors,
+  portfolioController.getPortfolioById
+);
 
 
 //private

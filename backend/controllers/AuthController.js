@@ -34,7 +34,8 @@ exports.registerAdmin = async (req, res) => {
 
 exports.verifyEmail = async (req, res) => {
     try {
-        const admin = await Admin.findOne({ verificationToken: req.params.token });
+        const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+        const admin = await Admin.findOne({ verificationToken: hashedToken });
         if (!admin) return res.status(400).json({ message: "Invalid token" });
 
         admin.isVerified = true;
@@ -69,14 +70,24 @@ exports.loginAdmin = async (req, res) => {
       return res.status(403).json({ message: "Please verify your email before logging in." });
     }
 
+    const accessExpiresIn = process.env.JWT_EXPIRATION || '1d';
+    const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRATION || '7d';
+
     const token = jwt.sign(
       { id: admin._id },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: accessExpiresIn }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: admin._id },
+      process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET,
+      { expiresIn: refreshExpiresIn }
     );
 
     res.json({
       token,
+      refreshToken,
       user: {
         id: admin._id,
         email: admin.email,
@@ -144,4 +155,19 @@ exports.resetPassword = async (req, res) => {
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
+};
+
+exports.refreshAccessToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body || {};
+    if (!refreshToken) {
+      return res.status(400).json({ message: 'Refresh token is required' });
+    }
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET);
+    const accessExpiresIn = process.env.JWT_EXPIRATION || '1d';
+    const newAccessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: accessExpiresIn });
+    res.json({ token: newAccessToken });
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid refresh token' });
+  }
 };

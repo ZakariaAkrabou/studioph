@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useSubmitContactMutation } from "../../store/services/contactApi.jsx";
 import { useTranslation } from 'react-i18next';
 import { FiMail, FiPhone, FiMapPin, FiInstagram, FiTwitter, FiFacebook, FiLinkedin, FiSend, FiArrowRight } from "react-icons/fi";
 
@@ -27,6 +28,7 @@ const Contact = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitContact] = useSubmitContactMutation();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,11 +37,21 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await submitContact({
+        name: formData.name,
+        email: formData.email,
+        service: formData.service,
+        preferredDate: formData.date || undefined,
+        message: formData.message,
+      }).unwrap();
       setSubmitted(true);
       setFormData({ name: "", email: "", phone: "", service: "", date: "", message: "" });
-    }, 1600);
+    } catch (err) {
+      // optionally show a toast/error state
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -112,7 +124,7 @@ const Contact = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">{t('contactPage.dateLabel')}</label>
-                        <input type="date" name="date" value={formData.date} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:outline-none focus:border-opacity-80 transition-colors" style={{ borderColor: `${ACCENT}40` }} />
+                        <input type="date" name="date" value={formData.date} onChange={handleChange} min={new Date().toISOString().split('T')[0]} className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:outline-none focus:border-opacity-80 transition-colors" style={{ borderColor: `${ACCENT}40` }} />
                       </div>
                     </div>
 

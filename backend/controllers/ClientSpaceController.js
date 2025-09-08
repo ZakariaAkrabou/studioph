@@ -44,13 +44,12 @@ exports.uploadImages = async (req, res) => {
       return res.status(404).json({ message: "Client space not found" });
     }
 
-    const uploadedUrls = [];
-    for (const file of req.files) {
-      const result = await cloudinary.uploader.upload(file.path, {
-        folder: `space_images/${spaceId}`,
-      });
-      uploadedUrls.push(result.secure_url);
+    // Files are already uploaded to Cloudinary by middleware; req.files contains secure URLs
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
     }
+
+    const uploadedUrls = req.files.map((f) => f);
 
     space.images.push(...uploadedUrls);
     await space.save();
@@ -204,13 +203,10 @@ exports.replaceImage = async (req, res) => {
       return res.status(400).json({ message: "Invalid image index" });
     }
 
-    if (!req.file) return res.status(400).json({ message: "No image provided" });
+    if (!req.file || !req.file.cloudinaryUrl)
+      return res.status(400).json({ message: "No image provided" });
 
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: `space_images/${space._id}`,
-    });
-
-    space.images[index] = result.secure_url;
+    space.images[index] = req.file.cloudinaryUrl;
     await space.save();
 
     res.status(200).json({ success: true, images: space.images });

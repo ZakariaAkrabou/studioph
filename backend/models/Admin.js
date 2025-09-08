@@ -22,8 +22,10 @@ adminSchema.methods.comparePassword = function (candidatePassword) {
 };
 
 adminSchema.methods.generateVerificationToken = function () {
-    this.verificationToken = crypto.randomBytes(32).toString('hex');
-    return this.verificationToken;
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashed = crypto.createHash('sha256').update(rawToken).digest('hex');
+    this.verificationToken = hashed;
+    return rawToken;
 };
 
 adminSchema.methods.generatePasswordResetToken = function () {

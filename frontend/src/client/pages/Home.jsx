@@ -72,6 +72,15 @@ const containerVariants = {
 };
 
 export default function HomePage() {
+  const slugify = (name) =>
+    (name || "")
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+
   const { t, i18n } = useTranslation();
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useGetCategoriesQuery();
   const { data: portfolios = [], isLoading: portfoliosLoading, error: portfoliosError } = useGetPortfoliosQuery();
@@ -297,7 +306,7 @@ export default function HomePage() {
                       {t('home.categories.explore', { name: cat.name.toLowerCase() })}
                     </p>
                     <Link
-                      to={`/gallery?category=${cat._id}`}
+                      to={`/gallery?category=${slugify(cat.name)}`}
                       className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium transition-colors duration-300 group-hover:translate-x-1"
                       style={{ color: HOVER }}
                     >

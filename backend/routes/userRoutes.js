@@ -10,6 +10,7 @@ const { registreLmiter, LoginLimiter, forgotPasswordLimiter, resetPasswordLimite
 router.post('/register', validateRegister, handleValidationErrors,registreLmiter, adminController.registerAdmin);
 router.get('/verify/:token', validateVerifyEmail, handleValidationErrors, verifyEmailLimiter, adminController.verifyEmail);
 router.post('/login', validateLogin, handleValidationErrors,LoginLimiter, adminController.loginAdmin);
+router.post('/refresh', adminController.refreshAccessToken);
 router.post('/forgot-password', validateForgotPassword, handleValidationErrors, forgotPasswordLimiter, adminController.forgotPassword);
 router.put('/reset-password/:token', validateResetPassword, handleValidationErrors, resetPasswordLimiter, adminController.resetPassword);
 router.get('/check', protectAdmin, adminController.checkAuth);

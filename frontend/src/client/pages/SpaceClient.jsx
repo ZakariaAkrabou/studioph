@@ -83,7 +83,7 @@ const SpaceClient = () => {
     return (spaces || []).map((s) => ({
       id: s._id,
       title: s.name,
-      description: "Private gallery. Enter your access key to view.",
+      description: t('client.privateGalleryDesc'),
       coverImage: s.cover || s.images?.[0] || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
       photographer: s.admin?.email || "StudioPH",
       eventDate: new Date(s.createdAt || Date.now()).toLocaleDateString(),
@@ -100,7 +100,7 @@ const SpaceClient = () => {
         setSelectedGallery({
           id: matchingSpace._id,
           title: matchingSpace.name,
-          description: "Private gallery. Enter your access key to view.",
+          description: t('client.privateGalleryDesc'),
           coverImage: matchingSpace.cover || matchingSpace.images?.[0] || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
           photographer: matchingSpace.admin?.email || "StudioPH",
           eventDate: new Date(matchingSpace.createdAt || Date.now()).toLocaleDateString(),
@@ -125,7 +125,7 @@ const SpaceClient = () => {
           matchingSpace = {
             id: space._id,
             title: space.name,
-            description: "Private gallery. Enter your access key to view.",
+            description: t('client.privateGalleryDesc'),
             coverImage: space.cover || space.images?.[0] || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
             photographer: space.admin?.email || "StudioPH",
             eventDate: new Date(space.createdAt || Date.now()).toLocaleDateString(),
