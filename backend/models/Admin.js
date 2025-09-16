@@ -8,7 +8,14 @@ const adminSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     verificationToken: String,
     resetPasswordToken: String,
-    resetPasswordExpire: Date
+    resetPasswordExpire: Date,
+    refreshTokens: [
+        {
+            tokenHash: { type: String, required: true },
+            expiresAt: { type: Date, required: true },
+            createdAt: { type: Date, default: Date.now },
+        }
+    ]
 });
 
 adminSchema.pre('save', async function (next) {

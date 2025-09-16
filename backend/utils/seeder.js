@@ -213,6 +213,20 @@ const seedDatabase = async () => {
 };
 
 if (require.main === module) {
+  const isProd = (process.env.NODE_ENV || '').toLowerCase() === 'production';
+  const allowDevSeed = process.env.SEED === '1' || process.argv.includes('--seed');
+  const forceProdSeed = process.env.SEED_FORCE === '1' || process.argv.includes('--force');
+
+  if (isProd && !forceProdSeed) {
+    console.error('[SEED BLOCKED] NODE_ENV=production. Set SEED_FORCE=1 or pass --force to run explicitly.');
+    process.exit(1);
+  }
+
+  if (!allowDevSeed && !forceProdSeed) {
+    console.error('[SEED BLOCKED] To run seeder, set SEED=1 or pass --seed.');
+    process.exit(1);
+  }
+
   seedDatabase();
 }
 

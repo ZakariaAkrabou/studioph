@@ -16,17 +16,17 @@ const fadeUp = {
 
 export default function AboutUs() {
   const { t } = useTranslation();
-  const containerRef = useRef(null);
+    const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, -60]);
   const overlayOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.8]);
-  return (
+    return (
     <div ref={containerRef} className="min-h-screen" style={{ backgroundColor: BG, color: TEXT }}>
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <motion.div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" style={{ opacity: overlayOpacity }} />
-        </div>
+            </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 text-center">
           <motion.div initial="hidden" animate="visible" variants={fadeUp} style={{ y: heroY }}>
             <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border border-white/10 bg-black/30 backdrop-blur-sm mb-4" style={{ color: MUTED }}>
@@ -34,7 +34,7 @@ export default function AboutUs() {
             </p>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
               {t('aboutPage.heroTitle')}
-            </h1>
+                        </h1>
             <p className="mt-4 text-base sm:text-lg max-w-2xl mx-auto" style={{ color: MUTED }}>
               {t('aboutPage.heroSubtitle')}
             </p>
@@ -45,8 +45,8 @@ export default function AboutUs() {
             >
               {t('aboutPage.exploreWork')} <FiArrowRight className="w-4 h-4" />
             </a>
-          </motion.div>
-        </div>
+                    </motion.div>
+                </div>
       </section>
 
       {/* Our Story */}
@@ -73,30 +73,30 @@ export default function AboutUs() {
                       <div className="font-semibold">{t('aboutPage.feature1Title')}</div>
                       <p className="text-sm" style={{ color: MUTED }}>{t('aboutPage.feature1Desc')}</p>
                     </div>
-                  </div>
+                            </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: `${ACCENT}20` }}>
                       <FiCheckCircle className="w-4 h-4" style={{ color: ACCENT }} />
-                    </div>
+                                </div>
                     <div>
                       <div className="font-semibold">{t('aboutPage.feature2Title')}</div>
                       <p className="text-sm" style={{ color: MUTED }}>{t('aboutPage.feature2Desc')}</p>
-                    </div>
-                  </div>
+                                </div>
+                                </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: `${ACCENT}20` }}>
                       <FiCheckCircle className="w-4 h-4" style={{ color: ACCENT }} />
-                    </div>
+                                </div>
                     <div>
                       <div className="font-semibold">{t('aboutPage.feature3Title')}</div>
                       <p className="text-sm" style={{ color: MUTED }}>{t('aboutPage.feature3Desc')}</p>
                     </div>
-                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+                </div>
+                                    </div>
+                            </motion.div>
+                    </div>
+                </div>
       </section>
 
       {/* Values */}
@@ -119,13 +119,13 @@ export default function AboutUs() {
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${ACCENT}20` }}>
                   <item.icon className="w-6 h-6" style={{ color: ACCENT }} />
-                </div>
+                                    </div>
                 <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
                 <p className="text-sm" style={{ color: MUTED }}>{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
       </section>
 
       {/* CTA */}
@@ -144,10 +144,10 @@ export default function AboutUs() {
               style={{ backgroundColor: ACCENT }}
             >
               {t('aboutPage.ctaButton')} <FiArrowRight className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
+                                            </a>
+                                        </div>
+                                        </div>
       </section>
-    </div>
-  );
+        </div>
+    );
 }

@@ -1,8 +1,11 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
 import { useCheckAuthQuery } from '../../store/services/authApi.jsx';
+import { logout } from '../../store/slices/authSlice.jsx';
 
 const ProtectedRoute = ({ children, fallback = '/auth/login' }) => {
+  const dispatch = useDispatch();
   const { isAuthenticated, token } = useSelector((state) => state.auth);
   const location = useLocation();
 
@@ -13,6 +16,12 @@ const ProtectedRoute = ({ children, fallback = '/auth/login' }) => {
   const { data, error, isLoading } = useCheckAuthQuery(undefined, {
     skip: !token,
   });
+
+  useEffect(() => {
+    if (error && (error.status === 401 || error.originalStatus === 401)) {
+      dispatch(logout());
+    }
+  }, [error, dispatch]);
 
   if (isLoading) {
     return (

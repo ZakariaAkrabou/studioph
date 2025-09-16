@@ -85,6 +85,14 @@ exports.loginAdmin = async (req, res) => {
       { expiresIn: refreshExpiresIn }
     );
 
+    
+    const refreshPayload = jwt.decode(refreshToken);
+    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const expiresAt = new Date(refreshPayload.exp * 1000);
+    admin.refreshTokens = (admin.refreshTokens || []).filter((t) => t.expiresAt > new Date());
+    admin.refreshTokens.push({ tokenHash, expiresAt });
+    await admin.save();
+
     res.json({
       token,
       refreshToken,
@@ -164,9 +172,32 @@ exports.refreshAccessToken = async (req, res) => {
       return res.status(400).json({ message: 'Refresh token is required' });
     }
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET);
-    const accessExpiresIn = process.env.JWT_EXPIRATION || '1d';
+
+    const admin = await Admin.findById(decoded.id);
+    if (!admin) return res.status(401).json({ message: 'Invalid refresh token' });
+
+    // validate against allowlist
+    const presentedHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const stored = (admin.refreshTokens || []).find((t) => t.tokenHash === presentedHash && t.expiresAt > new Date());
+    if (!stored) return res.status(401).json({ message: 'Invalid refresh token' });
+
+    // rotate token: remove old, issue new
+    admin.refreshTokens = admin.refreshTokens.filter((t) => t.tokenHash !== presentedHash && t.expiresAt > new Date());
+
+    const accessExpiresIn = process.env.JWT_EXPIRATION || '15m';
     const newAccessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: accessExpiresIn });
-    res.json({ token: newAccessToken });
+    const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRATION || '7d';
+    const newRefreshToken = jwt.sign(
+      { id: decoded.id },
+      process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET,
+      { expiresIn: refreshExpiresIn }
+    );
+    const newPayload = jwt.decode(newRefreshToken);
+    const newHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
+    admin.refreshTokens.push({ tokenHash: newHash, expiresAt: new Date(newPayload.exp * 1000) });
+    await admin.save();
+
+    res.json({ token: newAccessToken, refreshToken: newRefreshToken });
   } catch (err) {
     return res.status(401).json({ message: 'Invalid refresh token' });
   }

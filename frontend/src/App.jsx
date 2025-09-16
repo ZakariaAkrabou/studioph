@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import AdminRoutes from "./routes/AdminRoutes";
 import AuthRoutes from "./routes/AuthRoutes";
@@ -10,6 +11,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
      
         <Route path="/*" element={<ClientRoutes />} />
@@ -28,4 +30,12 @@ export default function App() {
       </Routes>
     </BrowserRouter>
   );
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [pathname]);
+  return null;
 }

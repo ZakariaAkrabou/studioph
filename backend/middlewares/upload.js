@@ -10,12 +10,15 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/png",
   "image/webp",
 ]);
+const ALLOWED_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 
 const upload = multer({
   storage,
   limits: { fileSize: MAX_FILE_SIZE_BYTES },
   fileFilter: (_req, file, cb) => {
-    if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+    const path = require('path');
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    if (!ALLOWED_MIME_TYPES.has(file.mimetype) || !ALLOWED_EXTENSIONS.has(ext)) {
       return cb(new Error("Invalid file type. Only JPEG, PNG, and WEBP are allowed."));
     }
     cb(null, true);

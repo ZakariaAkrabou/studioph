@@ -1,5 +1,5 @@
-import { useMemo, useState, useEffect, Suspense, lazy, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useMemo, useState, useEffect, Suspense, lazy, useCallback, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiChevronLeft, FiChevronRight, FiSearch, FiLoader } from "react-icons/fi";
@@ -193,10 +193,12 @@ const Gallery = () => {
   const { t } = useTranslation();
   const [active, setActive] = useState("all");
   const location = useLocation();
+  const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [isSlideshow, setIsSlideshow] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const topRef = useRef(null);
 
   // API queries
   const { data: portfolios = [], isLoading: portfoliosLoading, error: portfoliosError } = useGetPortfoliosQuery();
@@ -245,11 +247,13 @@ const Gallery = () => {
     return transformedPortfolios.filter((p) => slugify(p.category) === active);
   }, [active, transformedPortfolios, slugify]);
 
-  // Read category from query string and set active on mount/change
+  // Read category and page from query string and set state
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const cat = params.get("category");
     if (cat) setActive(cat);
+    const pg = parseInt(params.get("pg") || "1", 10);
+    if (!Number.isNaN(pg) && pg > 0) setCurrentPage(pg);
   }, [location.search]);
 
   // Pagination logic
@@ -259,9 +263,13 @@ const Gallery = () => {
     return filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filtered, currentPage]);
 
-  // Reset pagination when category changes
+  // Reset pagination when category changes and sync URL
   useEffect(() => {
     setCurrentPage(1);
+    const params = new URLSearchParams(location.search);
+    if (active && active !== 'all') params.set('category', active); else params.delete('category');
+    params.set('pg', '1');
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
   }, [active]);
 
   // Handle slideshow
@@ -274,6 +282,18 @@ const Gallery = () => {
 
     return () => clearTimeout(timer);
   }, [isSlideshow, lightboxIndex, paginatedPhotos.length]);
+
+  // Smooth scroll to top of grid on page change and sync URL
+  useEffect(() => {
+    if (topRef.current) {
+      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    const params = new URLSearchParams(location.search);
+    params.set('pg', String(currentPage));
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  }, [currentPage]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -352,6 +372,10 @@ const Gallery = () => {
         transition={{ duration: 0.6 }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/60" />
+        {/* Accent glow */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="w-[480px] h-[480px] rounded-full blur-3xl opacity-10" style={{ background: `radial-gradient(circle, ${ACCENT}, transparent 60%)` }} />
+        </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.h1 
             className="text-5xl md:text-7xl font-bold tracking-tight mb-6"
@@ -361,6 +385,8 @@ const Gallery = () => {
           >
             {t('gallery.title')}
           </motion.h1>
+          {/* Accent underline */}
+          <div className="mx-auto h-1 w-24 rounded-full mb-6" style={{ background: `linear-gradient(90deg, ${ACCENT}, #FFD369)` }} />
           <motion.p 
             className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed"
             style={{ color: MUTED }}
@@ -422,7 +448,7 @@ const Gallery = () => {
 
       {/* Photo Grid */}
       <section className="pb-24">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div ref={topRef} className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {filtered.length === 0 ? (
             <div className="text-center py-32">
               <FiSearch className="w-20 h-20 mx-auto mb-8" style={{ color: MUTED }} />
