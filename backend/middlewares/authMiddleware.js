@@ -3,7 +3,9 @@ const Admin = require('../models/Admin');
 
 
 const protectAdmin = async (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeaderToken = req.headers.authorization?.split(' ')[1];
+    const cookieToken = req.cookies && req.cookies.access_token;
+    const token = authHeaderToken || cookieToken;
     if (!token) return res.status(401).json({ message: 'Not authorized' });
 
     try {

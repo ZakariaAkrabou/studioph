@@ -70,7 +70,7 @@ exports.loginAdmin = async (req, res) => {
       return res.status(403).json({ message: "Please verify your email before logging in." });
     }
 
-    const accessExpiresIn = process.env.JWT_EXPIRATION || '1d';
+    const accessExpiresIn = process.env.JWT_EXPIRATION || '15m';
     const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRATION || '7d';
 
     const token = jwt.sign(
@@ -93,9 +93,21 @@ exports.loginAdmin = async (req, res) => {
     admin.refreshTokens.push({ tokenHash, expiresAt });
     await admin.save();
 
+    const isProd = (process.env.NODE_ENV || '').toLowerCase() === 'production';
+    const sameSite = 'Strict';
+    const secure = isProd;
+    const cookieOpts = {
+      httpOnly: true,
+      secure,
+      sameSite,
+      path: '/',
+    };
+    // Access token: short-lived, HttpOnly cookie
+    res.cookie('access_token', token, { ...cookieOpts, maxAge: 15 * 60 * 1000 });
+    // Refresh token: longer-lived, HttpOnly cookie
+    res.cookie('refresh_token', refreshToken, { ...cookieOpts, maxAge: 7 * 24 * 60 * 60 * 1000 });
+
     res.json({
-      token,
-      refreshToken,
       user: {
         id: admin._id,
         email: admin.email,
@@ -167,17 +179,18 @@ exports.resetPassword = async (req, res) => {
 
 exports.refreshAccessToken = async (req, res) => {
   try {
-    const { refreshToken } = req.body || {};
-    if (!refreshToken) {
+    const tokenFromCookie = req.cookies && req.cookies.refresh_token;
+    const presented = tokenFromCookie || (req.body && req.body.refreshToken);
+    if (!presented) {
       return res.status(400).json({ message: 'Refresh token is required' });
     }
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET);
+    const decoded = jwt.verify(presented, process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET);
 
     const admin = await Admin.findById(decoded.id);
     if (!admin) return res.status(401).json({ message: 'Invalid refresh token' });
 
     // validate against allowlist
-    const presentedHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const presentedHash = crypto.createHash('sha256').update(presented).digest('hex');
     const stored = (admin.refreshTokens || []).find((t) => t.tokenHash === presentedHash && t.expiresAt > new Date());
     if (!stored) return res.status(401).json({ message: 'Invalid refresh token' });
 
@@ -197,7 +210,19 @@ exports.refreshAccessToken = async (req, res) => {
     admin.refreshTokens.push({ tokenHash: newHash, expiresAt: new Date(newPayload.exp * 1000) });
     await admin.save();
 
-    res.json({ token: newAccessToken, refreshToken: newRefreshToken });
+    const isProd = (process.env.NODE_ENV || '').toLowerCase() === 'production';
+    const sameSite = 'Strict';
+    const secure = isProd;
+    const cookieOpts = {
+      httpOnly: true,
+      secure,
+      sameSite,
+      path: '/',
+    };
+    res.cookie('access_token', newAccessToken, { ...cookieOpts, maxAge: 15 * 60 * 1000 });
+    res.cookie('refresh_token', newRefreshToken, { ...cookieOpts, maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    res.json({ success: true });
   } catch (err) {
     return res.status(401).json({ message: 'Invalid refresh token' });
   }

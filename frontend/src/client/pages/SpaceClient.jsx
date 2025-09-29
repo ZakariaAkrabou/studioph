@@ -213,59 +213,41 @@ const SpaceClient = () => {
                   key={gallery.id}
                   className="group cursor-pointer"
                   variants={fadeInUp}
-                  whileHover={{ y: -6 }}
+                  whileHover={{ y: -4, scale: 1.01 }}
                   onClick={() => handleGalleryAccess(gallery)}
                 >
-                  <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: CARD, border: "1px solid rgba(255,255,255,0.1)" }}>
-                    <div className="relative h-64 sm:h-72 overflow-hidden">
-                      <img 
-                        src={gallery.coverImage} 
+                  <div className="relative overflow-hidden rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] ring-1 ring-white/10" style={{ backgroundColor: CARD }}>
+                    <div className="relative aspect-[4/3]">
+                      <img
+                        src={gallery.coverImage}
                         alt={gallery.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      
-                      {/* Lock indicator */}
-                      <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                        <FiLock className="w-5 h-5" style={{ color: ACCENT }} />
-                      </div>
-                      
-                      {/* Client name badge */}
-                      <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm" style={{ backgroundColor: `${ACCENT}CC`, color: "#0D0D0D" }}>
-                        {gallery.title}
-                      </div>
-                    </div>
-                    
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-2 group-hover:text-opacity-80 transition-colors">{gallery.title}</h3>
-                      <p className="text-sm mb-4 line-clamp-2" style={{ color: MUTED }}>
-                        {gallery.description}
-                      </p>
-                      
-                      <div className="flex items-center justify-between text-sm" style={{ color: MUTED }}>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1">
-                            <FiUser className="w-4 h-4" />
-                            <span>{gallery.photographer}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <FiImage className="w-4 h-4" />
-                            <span>{gallery.totalImages}</span>
-                          </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
+                      {/* Top row badges */}
+                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                        <div className="px-2.5 py-1 rounded-md text-[10px] font-semibold" style={{ backgroundColor: `${ACCENT}E6`, color: "#0D0D0D" }}>
+                          {gallery.category}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <FiCalendar className="w-4 h-4" />
-                          <span>{new Date(gallery.eventDate).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 pt-4 border-t border-white/10">
-                        <div className="flex items-center justify-center gap-2 text-sm font-medium" style={{ color: ACCENT }}>
-                          <FiKey className="w-4 h-4" />
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/50 text-[10px] text-white/90 backdrop-blur-sm">
+                          <FiLock className="w-3.5 h-3.5" style={{ color: ACCENT }} />
                           <span>{t('client.accessKeyRequired')}</span>
                         </div>
                       </div>
+                      {/* Title at bottom */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className="text-lg font-bold tracking-tight">{gallery.title}</h3>
+                        <div className="mt-2 flex items-center gap-4 text-xs" style={{ color: MUTED }}>
+                          <span className="inline-flex items-center gap-1"><FiUser className="w-4 h-4" />{gallery.photographer}</span>
+                          <span className="inline-flex items-center gap-1"><FiImage className="w-4 h-4" />{gallery.totalImages}</span>
+                          <span className="inline-flex items-center gap-1"><FiCalendar className="w-4 h-4" />{new Date(gallery.eventDate).toLocaleDateString()}</span>
+                        </div>
+                      </div>
                     </div>
+                    {/* Subtle footer hover effect */}
+                    <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, ${ACCENT}, transparent)` }} />
                   </div>
                 </motion.div>
               ))}

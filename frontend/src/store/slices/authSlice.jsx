@@ -1,13 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getCookie, setCookie, deleteCookie } from '../../shared/utils/cookies.js';
 
-const tokenFromCookie = getCookie('auth_token');
+const tokenFromCookie = null; // token now stored HttpOnly, not readable in JS
 const userFromCookie = getCookie('auth_user');
 
 const initialState = {
   token: tokenFromCookie || null,
   user: userFromCookie ? JSON.parse(decodeURIComponent(userFromCookie)) : null,
-  isAuthenticated: !!tokenFromCookie,
+  // After moving to HttpOnly tokens, treat presence of user cookie as logged-in on refresh
+  isAuthenticated: !!(userFromCookie),
 };
 
 const authSlice = createSlice({
@@ -18,15 +19,13 @@ const authSlice = createSlice({
       const { token, user } = action.payload;
       state.token = token || null;
       state.user = user || null;
-      state.isAuthenticated = !!token;
+      // With HttpOnly cookies, presence of user implies authenticated
+      state.isAuthenticated = !!user || !!token;
       
-      if (token) {
-        setCookie('auth_token', token, 7); 
-        if (user) {
-          setCookie('auth_user', encodeURIComponent(JSON.stringify(user)), 7);
-        }
+      // Store only non-sensitive user data in a readable cookie
+      if (user) {
+        setCookie('auth_user', encodeURIComponent(JSON.stringify(user)), 7);
       } else {
-        deleteCookie('auth_token');
         deleteCookie('auth_user');
       }
     },
@@ -34,7 +33,6 @@ const authSlice = createSlice({
       state.token = null;
       state.user = null;
       state.isAuthenticated = false;
-      deleteCookie('auth_token');
       deleteCookie('auth_user');
     },
     updateUser: (state, action) => {

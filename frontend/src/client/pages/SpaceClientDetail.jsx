@@ -33,6 +33,18 @@ const slugify = (value) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
+// Build a smaller Cloudinary thumbnail from a full image URL when possible
+const buildCloudinaryThumbnail = (url, width = 480) => {
+  try {
+    if (typeof url !== 'string') return url;
+    if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
+    // Insert transformation right after '/upload/'
+    return url.replace('/upload/', `/upload/c_fill,q_auto,f_auto,w_${width}/`);
+  } catch {
+    return url;
+  }
+};
+
 export default function SpaceClientDetail() {
   const { name } = useParams();
   const location = useLocation();
@@ -99,7 +111,7 @@ export default function SpaceClientDetail() {
         photographer: gallery.photographer,
         eventDate: gallery.eventDate,
         totalImages: res.images?.length || 0,
-        images: (res.images || []).map((url, idx) => ({ id: idx + 1, url, thumbnail: url, title: `Image ${idx + 1}`, favorite: false }))
+        images: (res.images || []).map((url, idx) => ({ id: idx + 1, url, thumbnail: buildCloudinaryThumbnail(url, 600), title: `Image ${idx + 1}`, favorite: false }))
       };
       setIsAuthenticated(true);
       setClientSpace(normalized);
@@ -181,7 +193,7 @@ export default function SpaceClientDetail() {
     <motion.div className="min-h-screen" style={{ backgroundColor: BG, color: TEXT }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <motion.section className="relative py-16 sm:py-20 overflow-hidden" variants={sectionVariants} initial="hidden" animate="visible">
         <div className="absolute inset-0">
-          <img src={clientSpace.coverImage} alt={clientSpace.title} className="w-full h-full object-cover" />
+          <img src={clientSpace.coverImage} alt={clientSpace.title} className="w-full h-full object-cover" loading="eager" decoding="async" fetchpriority="high" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
         </div>
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -211,7 +223,7 @@ export default function SpaceClientDetail() {
           <motion.div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6" variants={containerVariants}>
             {clientSpace.images.map((image, index) => (
               <motion.div key={image.id} className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer" variants={fadeInUp} whileHover={{ scale: 1.02 }} onClick={() => openLightbox(image, index)}>
-                <img src={image.thumbnail} alt={image.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                <img src={image.thumbnail} alt={image.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300" />
                 {image.favorite && (
                   <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">

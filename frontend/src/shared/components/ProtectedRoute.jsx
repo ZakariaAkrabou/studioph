@@ -6,15 +6,16 @@ import { logout } from '../../store/slices/authSlice.jsx';
 
 const ProtectedRoute = ({ children, fallback = '/auth/login' }) => {
   const dispatch = useDispatch();
-  const { isAuthenticated, token } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const location = useLocation();
 
-  if (!token) {
+  // If we know user is not authenticated, redirect immediately
+  if (!isAuthenticated) {
     return <Navigate to={fallback} state={{ from: location }} replace />;
   }
 
-  const { data, error, isLoading } = useCheckAuthQuery(undefined, {
-    skip: !token,
+  const { error, isLoading } = useCheckAuthQuery(undefined, {
+    skip: !isAuthenticated,
   });
 
   useEffect(() => {
@@ -34,7 +35,7 @@ const ProtectedRoute = ({ children, fallback = '/auth/login' }) => {
     );
   }
 
-  if (error || !isAuthenticated) {
+  if (error) {
     return <Navigate to={fallback} state={{ from: location }} replace />;
   }
 

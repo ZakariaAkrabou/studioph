@@ -4,6 +4,7 @@ dotenv.config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const connectDB = require("./config/database");
 const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -49,6 +50,7 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json({ limit: process.env.BODY_LIMIT || '1mb' }));
+app.use(cookieParser());
 
 app.use("/auth", userRoutes);
 app.use("/category", categoryRoutes);

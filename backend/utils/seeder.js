@@ -69,6 +69,7 @@ const getPortfolioData = (adminId, categoryId) => {
 
 const getClientSpaceData = (adminId, index) => ({
   name: `Client Project ${index + 1}`,
+  // Note: this is the plaintext prior to hashing. Do NOT persist or log.
   key: `client${index + 1}key`,
   admin: adminId,
   images: [
@@ -163,22 +164,16 @@ const seedClientSpaces = async (admins) => {
       const count = Math.floor(Math.random() * 3) + 2; 
       for (let i = 0; i < count; i++) {
         const spaceData = getClientSpaceData(admin._id, i);
-        clientSpaces.push(spaceData);
+        // Hash client space key before inserting
+        const hashedKey = await bcrypt.hash(spaceData.key, 10);
+        clientSpaces.push({ ...spaceData, key: hashedKey });
       }
     }
 
     const createdSpaces = await ClientSpace.insertMany(clientSpaces);
     console.log(`Seeded ${createdSpaces.length} client spaces`);
-    
-    console.log('\nClient Space Access Information:');
-    createdSpaces.forEach((space, index) => {
-      const admin = admins.find(a => a._id.toString() === space.admin.toString());
-      console.log(`\nClient Space ${index + 1}:`);
-      console.log(`Name: ${space.name}`);
-      console.log(`Admin: ${admin.email}`);
-      console.log(`Key: ${space.key}`); 
-    });
-    
+    // Intentionally do not log client space keys
+
     return createdSpaces;
   } catch (error) {
     console.error('Error seeding client spaces:', error);
@@ -198,10 +193,7 @@ const seedDatabase = async () => {
     await seedClientSpaces(admins);
     
     console.log(' Database seeding completed successfully!');
-    console.log('You can now log in with any of these admin accounts:');
-    adminData.forEach(admin => {
-      console.log(`Email: ${admin.email} | Password: ${admin.password}`);
-    });
+    // Avoid logging admin passwords in any environment
     
     process.exit(0);
   } catch (error) {

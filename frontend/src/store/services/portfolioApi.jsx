@@ -6,11 +6,6 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 const baseQuery = fetchBaseQuery({
   baseUrl,
   credentials: 'include',
-  prepareHeaders: (headers, { getState }) => {
-    const token = getState()?.auth?.token;
-    if (token) headers.set('authorization', `Bearer ${token}`);
-    return headers;
-  },
 });
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
