@@ -74,14 +74,22 @@ export const clientSpaceApi = createApi({
           body,
         };
       },
-      invalidatesTags: (_r, _e, { id }) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: 'ClientSpace', id },
+        { type: 'ClientSpace', id: 'LIST' },
+        { type: 'ClientSpace', id: 'PUBLIC' },
+      ],
     }),
     deleteImage: builder.mutation({
       query: ({ id, index }) => ({
         url: `/client-space/${id}/image?index=${index}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (_r, _e, { id }) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: 'ClientSpace', id },
+        { type: 'ClientSpace', id: 'LIST' },
+        { type: 'ClientSpace', id: 'PUBLIC' },
+      ],
     }),
     replaceImage: builder.mutation({
       query: ({ id, index, file }) => {
@@ -93,7 +101,11 @@ export const clientSpaceApi = createApi({
           body: form,
         };
       },
-      invalidatesTags: (_r, _e, { id }) => [{ type: 'ClientSpace', id }, { type: 'ClientSpace', id: 'LIST' }],
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: 'ClientSpace', id },
+        { type: 'ClientSpace', id: 'LIST' },
+        { type: 'ClientSpace', id: 'PUBLIC' },
+      ],
     }),
     accessSpace: builder.mutation({
       query: ({ id, key }) => ({

@@ -6,11 +6,12 @@ import Category from "../admin/pages/Category";
 import Portfolio from "../admin/pages/Portfolio";
 import Client from "../admin/pages/Client";
 import Settings from "../admin/pages/Settings";
+import ProtectedRoute from "../shared/components/ProtectedRoute";
 
 export default function AdminRoutes() {
   return (
     <Routes>
-      <Route element={<AdminLayout />}>
+      <Route element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="portfolio" element={<Portfolio />} />
         <Route path="categories" element={ <Category /> } />

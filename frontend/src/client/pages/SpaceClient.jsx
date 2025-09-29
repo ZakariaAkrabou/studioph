@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiLock,
   FiUnlock,
   FiKey,
   FiEye,
+  FiEyeOff,
   FiX,
   FiChevronLeft,
   FiChevronRight,
@@ -62,20 +63,25 @@ const containerVariants = {
   }
 };
 
+const slugify = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
 const SpaceClient = () => {
-  const { t } = useTranslation();
-  const { key } = useParams();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [accessKey, setAccessKey] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [clientSpace, setClientSpace] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedGallery, setSelectedGallery] = useState(null);
   const [showKeyModal, setShowKeyModal] = useState(false);
-  const [initialLoad, setInitialLoad] = useState(true);
+  const [showKey, setShowKey] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
 
   const { data: spaces = [], isLoading: spacesLoading } = useGetPublicSpacesQuery();
   const [accessSpace, { isLoading: accessLoading }] = useAccessSpaceMutation();
@@ -86,133 +92,64 @@ const SpaceClient = () => {
       description: t('client.privateGalleryDesc'),
       coverImage: s.cover || s.images?.[0] || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
       photographer: s.admin?.email || "StudioPH",
-      eventDate: new Date(s.createdAt || Date.now()).toLocaleDateString(),
+      eventDate: new Intl.DateTimeFormat(i18n.language).format(new Date(s.createdAt || Date.now())),
       totalImages: s.images?.length || 0,
       category: "Gallery"
     }));
-  }, [spaces]);
+  }, [spaces, i18n.language]);
+
+  const totalPages = Math.max(1, Math.ceil((publicGalleries?.length || 0) / pageSize));
+  const currentGalleries = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return publicGalleries.slice(start, start + pageSize);
+  }, [publicGalleries, currentPage]);
 
   useEffect(() => {
-    if (key && spaces.length > 0) {
-      setAccessKey(key);
-      const matchingSpace = spaces.find(space => space.accessKey === key);
-      if (matchingSpace) {
-        setSelectedGallery({
-          id: matchingSpace._id,
-          title: matchingSpace.name,
-          description: t('client.privateGalleryDesc'),
-          coverImage: matchingSpace.cover || matchingSpace.images?.[0] || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
-          photographer: matchingSpace.admin?.email || "StudioPH",
-          eventDate: new Date(matchingSpace.createdAt || Date.now()).toLocaleDateString(),
-          totalImages: matchingSpace.images?.length || 0,
-          category: "Gallery"
-        });
-      }
-      handleAuthentication(key);
-    } else {
-      setInitialLoad(false);
-    }
-  }, [key, spaces]);
+    // Reset to first page when data set changes
+    setCurrentPage(1);
+  }, [publicGalleries.length]);
 
-  const handleAuthentication = async (keyToVerify) => {
-    setIsLoading(true);
-    setError("");
-    try {
-      let matchingSpace = selectedGallery;
-      if (!matchingSpace && spaces.length > 0) {
-        const space = spaces.find(s => s.accessKey === keyToVerify);
-        if (space) {
-          matchingSpace = {
-            id: space._id,
-            title: space.name,
-            description: t('client.privateGalleryDesc'),
-            coverImage: space.cover || space.images?.[0] || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
-            photographer: space.admin?.email || "StudioPH",
-            eventDate: new Date(space.createdAt || Date.now()).toLocaleDateString(),
-            totalImages: space.images?.length || 0,
-            category: "Gallery"
-          };
-          setSelectedGallery(matchingSpace);
-        }
-      }
+  // no detail selection logic here
 
-      if (matchingSpace?.id) {
-        const res = await accessSpace({ id: matchingSpace.id, key: keyToVerify }).unwrap();
-        const normalized = {
-          id: matchingSpace.id,
-          title: res.name || matchingSpace.title,
-          description: matchingSpace.description,
-          coverImage: matchingSpace.coverImage,
-          photographer: matchingSpace.photographer,
-          eventDate: matchingSpace.eventDate,
-          totalImages: res.images?.length || 0,
-          images: (res.images || []).map((url, idx) => ({
-            id: idx + 1,
-            url,
-            thumbnail: url,
-            title: `Image ${idx + 1}`,
-            favorite: false,
-          }))
-        };
-        setIsAuthenticated(true);
-        setClientSpace(normalized);
-      } else {
-        setError("Please select a gallery first.");
-      }
-    } catch (err) {
-      setError(err?.data?.message || "Invalid access key. Please try again.");
-    } finally {
-      setIsLoading(false);
-      setInitialLoad(false);
-    }
-  };
+  // authentication is handled in detail page
 
-  const handleKeySubmit = (e) => {
+  const handleKeySubmit = async (e) => {
     e.preventDefault();
-    if (accessKey.trim()) {
-      navigate(`/client/${accessKey}`);
-      handleAuthentication(accessKey);
-    }
+    if (!accessKey.trim() || !selectedGallery) return;
+    setError("");
+    setIsSubmitting(true);
+    const slug = slugify(selectedGallery.title);
+    navigate(`/client/${slug}`, { state: { spaceId: selectedGallery.id } });
+    setShowKeyModal(false);
   };
 
   const handleGalleryAccess = (gallery) => {
     setSelectedGallery(gallery);
-    setShowKeyModal(true);
     setAccessKey("");
     setError("");
+    setShowKeyModal(true);
   };
 
-  const handleModalKeySubmit = (e) => {
+  const handleModalKeySubmit = async (e) => {
     e.preventDefault();
-    if (accessKey.trim()) {
+    if (!accessKey.trim() || !selectedGallery) return;
+    setError("");
+    setIsSubmitting(true);
+    try {
+      // Pass the key to the detail page to verify there, keeping UX localized
       setShowKeyModal(false);
-      navigate(`/client/${accessKey}`);
-      handleAuthentication(accessKey);
+      const slug = slugify(selectedGallery.title);
+      navigate(`/client/${slug}`, { state: { spaceId: selectedGallery.id, key: accessKey } });
+    } catch (err) {
+      // Handle error - keep modal open and show error
+      setError(err?.data?.message || "Invalid access key. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
-  const openLightbox = (image, index) => {
-    setSelectedImage(image);
-    setCurrentImageIndex(index);
-  };
+  // no lightbox in list page
 
-  const closeLightbox = () => {
-    setSelectedImage(null);
-  };
-
-  const nextImage = () => {
-    const nextIndex = (currentImageIndex + 1) % clientSpace.images.length;
-    setCurrentImageIndex(nextIndex);
-    setSelectedImage(clientSpace.images[nextIndex]);
-  };
-
-  const prevImage = () => {
-    const prevIndex = (currentImageIndex - 1 + clientSpace.images.length) % clientSpace.images.length;
-    setCurrentImageIndex(prevIndex);
-    setSelectedImage(clientSpace.images[prevIndex]);
-  };
-
-  if (initialLoad || spacesLoading || (key && isLoading)) {
+  if (spacesLoading && !showKeyModal) {
     return (
       <motion.div 
         className="min-h-screen flex items-center justify-center relative z-10"
@@ -222,181 +159,12 @@ const SpaceClient = () => {
       >
         <div className="text-center">
           <div className="w-12 h-12 border-2 border-current border-t-transparent rounded-full animate-spin mb-4 mx-auto" style={{ color: ACCENT }} />
-          <p className="text-lg">
-            {key ? t('client.verifying') : t('client.loading')}
-          </p>
+          <p className="text-lg">{t('client.loading')}</p>
         </div>
       </motion.div>
     );
   }
-
-  // Show authenticated content if user has valid access
-  if (isAuthenticated && clientSpace) {
-    return (
-      <motion.div 
-        className="min-h-screen relative z-10"
-        style={{ backgroundColor: BG, color: TEXT }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        {/* Hero Section */}
-        <motion.section 
-          className="relative py-16 sm:py-20 overflow-hidden"
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <div className="absolute inset-0">
-            <img 
-              src={clientSpace.coverImage} 
-              alt={clientSpace.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
-          </div>
-          
-          <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <motion.div variants={fadeInUp}>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-                {clientSpace.title}
-              </h1>
-              <p className="text-lg sm:text-xl mb-6 max-w-3xl mx-auto" style={{ color: MUTED }}>
-                {clientSpace.description}
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <FiStar className="w-4 h-4" style={{ color: ACCENT }} />
-                  <span>Photographer: {clientSpace.photographer}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiGrid className="w-4 h-4" style={{ color: ACCENT }} />
-                  <span>{clientSpace.totalImages} Photos</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiHeart className="w-4 h-4" style={{ color: ACCENT }} />
-                  <span>{clientSpace.eventDate}</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.section>
-
-        {/* Gallery Grid */}
-        <motion.section 
-          className="py-12 sm:py-16 relative z-10"
-          variants={sectionVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div 
-              className="flex items-center justify-between mb-8"
-              variants={fadeInUp}
-            >
-              <h2 className="text-2xl sm:text-3xl font-bold">{t('client.yourCollection')}</h2>
-            </motion.div>
-
-            <motion.div 
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
-              variants={containerVariants}
-            >
-              {clientSpace.images.map((image, index) => (
-                <motion.div
-                  key={image.id}
-                  className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
-                  variants={fadeInUp}
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => openLightbox(image, index)}
-                >
-                  <img 
-                    src={image.thumbnail} 
-                    alt={image.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300" />
-                  
-                  {/* Favorite indicator */}
-                  {image.favorite && (
-                    <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                      <FiHeart className="w-4 h-4 fill-current" style={{ color: ACCENT }} />
-                    </div>
-                  )}
-                  
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                      <FiEye className="w-6 h-6" style={{ color: TEXT }} />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </motion.section>
-
-        {/* Lightbox */}
-        <AnimatePresence>
-          {selectedImage && (
-            <motion.div
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
-              style={{ backgroundColor: "rgba(0,0,0,0.95)" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeLightbox}
-            >
-              <motion.div
-                className="relative max-w-6xl max-h-full"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <img
-                  src={selectedImage.url}
-                  alt={selectedImage.title}
-                  className="max-w-full max-h-[80vh] object-contain rounded-lg"
-                />
-                
-                {/* Close button */}
-                <button
-                  onClick={closeLightbox}
-                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-black/70"
-                >
-                  <FiX className="w-6 h-6" style={{ color: TEXT }} />
-                </button>
-                
-                {/* Navigation */}
-                <button
-                  onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-black/70"
-                >
-                  <FiChevronLeft className="w-6 h-6" style={{ color: TEXT }} />
-                </button>
-                
-                <button
-                  onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-black/70"
-                >
-                  <FiChevronRight className="w-6 h-6" style={{ color: TEXT }} />
-                </button>
-                
-                {/* Image info */}
-                <div className="absolute bottom-4 left-4 right-4 text-center">
-                  <h3 className="text-lg font-semibold mb-1">{selectedImage.title}</h3>
-                  <p className="text-sm" style={{ color: MUTED }}>
-                    {currentImageIndex + 1} of {clientSpace.images.length}
-                  </p>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    );
-  }
+  // no authenticated content in list page
 
   // Show gallery selection page
     return (
@@ -433,15 +201,14 @@ const SpaceClient = () => {
         className="py-8 sm:py-12 relative z-10"
           variants={sectionVariants}
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          animate="visible"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
               variants={containerVariants}
             >
-            {publicGalleries.map((gallery) => (
+            {currentGalleries.map((gallery) => (
                 <motion.div
                   key={gallery.id}
                   className="group cursor-pointer"
@@ -463,9 +230,9 @@ const SpaceClient = () => {
                         <FiLock className="w-5 h-5" style={{ color: ACCENT }} />
                       </div>
                       
-                      {/* Category badge */}
+                      {/* Client name badge */}
                       <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm" style={{ backgroundColor: `${ACCENT}CC`, color: "#0D0D0D" }}>
-                        {gallery.category}
+                        {gallery.title}
                       </div>
                     </div>
                     
@@ -503,6 +270,44 @@ const SpaceClient = () => {
                 </motion.div>
               ))}
             </motion.div>
+            {/* Pagination */}
+            {publicGalleries.length > pageSize && (
+              <div className="mt-8 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-md border disabled:opacity-50"
+                  style={{ borderColor: "rgba(255,255,255,0.2)", color: TEXT, backgroundColor: CARD }}
+                >
+                  Prev
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setCurrentPage(p)}
+                    className={`px-3 py-2 rounded-md border ${p === currentPage ? 'font-semibold' : ''}`}
+                    style={{ 
+                      borderColor: p === currentPage ? ACCENT : "rgba(255,255,255,0.2)", 
+                      color: p === currentPage ? "#0D0D0D" : TEXT,
+                      backgroundColor: p === currentPage ? ACCENT : CARD 
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 rounded-md border disabled:opacity-50"
+                  style={{ borderColor: "rgba(255,255,255,0.2)", color: TEXT, backgroundColor: CARD }}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </motion.section>
 
@@ -540,7 +345,7 @@ const SpaceClient = () => {
                     <div className="relative">
                       <FiKey className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: MUTED }} />
                       <input
-                        type="text"
+                        type={showKey ? "text" : "password"}
                         value={accessKey}
                         onChange={(e) => setAccessKey(e.target.value)}
                         placeholder={t('client.enterKey')}
@@ -551,6 +356,15 @@ const SpaceClient = () => {
                           color: TEXT
                         }}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowKey((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-sm opacity-75 hover:opacity-100"
+                        aria-label={showKey ? "Hide key" : "Show key"}
+                        style={{ color: MUTED }}
+                      >
+                        {showKey ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                      </button>
                     </div>
                     {error && (
                       <motion.p 
@@ -574,11 +388,11 @@ const SpaceClient = () => {
                     </button>
                     <button
                       type="submit"
-                      disabled={!accessKey.trim()}
+                      disabled={!accessKey.trim() || isSubmitting}
                       className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50"
                       style={{ backgroundColor: ACCENT, color: "#0D0D0D" }}
                     >
-                      {t('client.accessGallery')}
+                      {isSubmitting ? t('client.verifying') : t('client.accessGallery')}
                     </button>
                   </div>
                 </form>

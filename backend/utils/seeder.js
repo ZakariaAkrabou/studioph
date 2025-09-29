@@ -129,7 +129,6 @@ const seedPortfolios = async (admins, categories) => {
       }
     }
 
-    // Insert portfolios one by one to handle any potential duplicates gracefully
     const createdPortfolios = [];
     for (const portfolio of portfolios) {
       try {
@@ -137,7 +136,6 @@ const seedPortfolios = async (admins, categories) => {
         createdPortfolios.push(createdPortfolio);
       } catch (error) {
         if (error.code === 11000) {
-          // Duplicate key error - skip this portfolio
           console.log(`Skipping duplicate portfolio: ${portfolio.title}`);
           continue;
         } else {

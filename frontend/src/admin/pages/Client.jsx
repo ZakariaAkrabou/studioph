@@ -154,7 +154,7 @@ export default function ClientSpacesPage() {
   };
 
   const openEdit = (space) => {
-    setEditForm({ name: space.name, key: space.key || "", cover: null });
+    setEditForm({ name: space.name, key: "", cover: null });
     setEditCoverPreview(space.cover || space.images?.[0] || null);
     setShowEdit(true);
   };

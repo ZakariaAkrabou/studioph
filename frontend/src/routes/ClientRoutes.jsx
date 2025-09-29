@@ -5,6 +5,7 @@ import GalleryPage from "../client/pages/Gallery";
 import AboutPage from "../client/pages/AboutUs";
 import ContactPage from "../client/pages/Contact";
 import SpaceClientPage from "../client/pages/SpaceClient";
+import SpaceClientDetailPage from "../client/pages/SpaceClientDetail";
 
 export default function ClientRoutes() {
   return (
@@ -16,8 +17,7 @@ export default function ClientRoutes() {
         <Route path="about" element={<AboutPage />} />
         <Route path="contact" element={<ContactPage />} />
         <Route path="client" element={<SpaceClientPage />} />
-        <Route path="client/:key" element={<SpaceClientPage />} />
-        <Route path="space/:key" element={<SpaceClientPage />} />
+        <Route path="client/:name" element={<SpaceClientDetailPage />} />
       </Route>
     </Routes>
   );
