@@ -44,6 +44,27 @@ const resources = {
         ctaSubtitle: 'Let’s bring your vision to life with a session tailored to you.',
         ctaButton: 'Book Your Session'
       },
+      // Services under About page (EN)
+      // Note: some projects have duplicate aboutPage blocks; ensure both include services keys
+      aboutPageServices: {
+        title: 'Our Photography Services',
+        subtitle: 'Tailored experiences to capture every story beautifully',
+        items: {
+          weddingTitle: 'Weddings & Engagements',
+          weddingDesc: 'Elegant storytelling from the "yes" to the "I do".',
+          portraitsTitle: 'Portraits & Headshots',
+          portraitsDesc: 'Clean, confident portraits for personal or professional use.',
+          eventsTitle: 'Events & Celebrations',
+          eventsDesc: 'From intimate gatherings to grand openings, we’ve got you covered.',
+          fashionTitle: 'Fashion & Editorial',
+          fashionDesc: 'Bold, creative visuals for brands and designers.',
+          lifestyleTitle: 'Lifestyle & Family',
+          lifestyleDesc: 'Natural moments captured with warmth and style.',
+          productTitle: 'Product & Brand',
+          productDesc: 'Crisp visuals that make your products shine.'
+        },
+        learnMore: 'Learn more'
+      },
       home: {
         hero: {
           title1: "Capture Life's",
@@ -104,6 +125,26 @@ const resources = {
         ctaTitle: 'On travaille ensemble ?',
         ctaSubtitle: 'Donnez vie à votre vision avec une séance sur‑mesure.',
         ctaButton: 'Réserver une séance'
+      },
+      // Services under About page (FR)
+      aboutPageServices: {
+        title: 'Nos Services Photo',
+        subtitle: 'Des expériences sur‑mesure pour raconter chaque histoire',
+        items: {
+          weddingTitle: 'Mariages & Fiançailles',
+          weddingDesc: 'Un récit élégant du « oui » au « je le veux ».',
+          portraitsTitle: 'Portraits & Headshots',
+          portraitsDesc: 'Portraits nets et assurés — personnels ou professionnels.',
+          eventsTitle: 'Événements & Célébrations',
+          eventsDesc: 'Des moments intimistes aux grandes ouvertures, on s’occupe de tout.',
+          fashionTitle: 'Mode & Éditorial',
+          fashionDesc: 'Visuels audacieux et créatifs pour marques et designers.',
+          lifestyleTitle: 'Lifestyle & Famille',
+          lifestyleDesc: 'Des instants naturels capturés avec chaleur et style.',
+          productTitle: 'Produit & Marque',
+          productDesc: 'Des visuels précis qui mettent vos produits en valeur.'
+        },
+        learnMore: 'En savoir plus'
       },
       gallery: {
         title: 'Gallery',
