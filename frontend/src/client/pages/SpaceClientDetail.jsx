@@ -133,6 +133,15 @@ export default function SpaceClientDetail() {
   const nextImage = () => setCurrentImageIndex((i) => (i + 1) % clientSpace.images.length);
   const prevImage = () => setCurrentImageIndex((i) => (i - 1 + clientSpace.images.length) % clientSpace.images.length);
 
+  useEffect(() => {
+    if (selectedImage && clientSpace?.images?.length) {
+      const next = clientSpace.images[currentImageIndex];
+      if (next && next !== selectedImage) {
+        setSelectedImage(next);
+      }
+    }
+  }, [currentImageIndex, clientSpace]);
+
   if ((initialLoad || spacesLoading || authInProgress) && (!selected || !isAuthenticated)) {
     return (
       <motion.div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: BG, color: TEXT }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

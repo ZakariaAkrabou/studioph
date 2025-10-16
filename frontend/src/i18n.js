@@ -44,6 +44,27 @@ const resources = {
         ctaSubtitle: 'Let’s bring your vision to life with a session tailored to you.',
         ctaButton: 'Book Your Session'
       },
+      // Services under About page (EN)
+      // Note: some projects have duplicate aboutPage blocks; ensure both include services keys
+      aboutPageServices: {
+        title: 'Our Photography Services',
+        subtitle: 'Tailored experiences to capture every story beautifully',
+        items: {
+          weddingTitle: 'Weddings & Engagements',
+          weddingDesc: 'Elegant storytelling from the "yes" to the "I do".',
+          portraitsTitle: 'Portraits & Headshots',
+          portraitsDesc: 'Clean, confident portraits for personal or professional use.',
+          eventsTitle: 'Events & Celebrations',
+          eventsDesc: 'From intimate gatherings to grand openings, we’ve got you covered.',
+          fashionTitle: 'Fashion & Editorial',
+          fashionDesc: 'Bold, creative visuals for brands and designers.',
+          lifestyleTitle: 'Lifestyle & Family',
+          lifestyleDesc: 'Natural moments captured with warmth and style.',
+          productTitle: 'Product & Brand',
+          productDesc: 'Crisp visuals that make your products shine.'
+        },
+        learnMore: 'Learn more'
+      },
       home: {
         hero: {
           title1: "Capture Life's",
@@ -76,34 +97,6 @@ const resources = {
           bookSession: 'Book Your Session',
           viewWork: 'View Our Work'
         }
-      },
-      aboutPage: {
-        heroTag: 'À propos de StudioPH',
-        heroTitle: 'Créer des images intemporelles',
-        heroSubtitle: 'Nous racontons des histoires avec une esthétique moderne et élégante. Mariages, portraits — un équilibre entre art et précision.',
-        exploreWork: 'Voir nos réalisations',
-        ourStory: 'Notre histoire',
-        storyP1: 'Depuis plus de dix ans, notre équipe raconte des histoires authentiques à travers des images fortes. Chaque image est composée avec soin pour honorer vos moments.',
-        storyP2: 'Nous allions excellence technique et style raffiné pour des photos à la fois intimes et iconiques.',
-        feature1Title: 'Qualité éditoriale',
-        feature1Desc: 'Esthétique moderne et soignée, avec une colorimétrie précise.',
-        feature2Title: 'Collaboration centrée client',
-        feature2Desc: 'Des séances guidées et adaptées à votre histoire et votre confort.',
-        feature3Title: 'Livraison pérenne',
-        feature3Desc: 'Fichiers haute résolution, calibrés pour l’impression et le web.',
-        valuesTitle: 'Nos principes',
-        valuesSubtitle: 'Quatre piliers au cœur de notre travail',
-        pillarPassion: 'Passion',
-        pillarPassionDesc: 'Émotion, narration authentique et amour du métier.',
-        pillarConnection: 'Lien',
-        pillarConnectionDesc: 'Nous écoutons d’abord pour comprendre votre histoire et votre vision.',
-        pillarExcellence: 'Excellence',
-        pillarExcellenceDesc: 'Une qualité qui traverse le temps.',
-        pillarCraft: 'Savoir‑faire',
-        pillarCraftDesc: 'Composition, lumière et post‑production maîtrisées.',
-        ctaTitle: 'On travaille ensemble ?',
-        ctaSubtitle: 'Donnez vie à votre vision avec une séance sur‑mesure.',
-        ctaButton: 'Réserver une séance'
       },
       gallery: {
         title: 'Gallery',
@@ -243,6 +236,53 @@ const resources = {
         yourCollection: 'Votre collection de photos',
         accessKeyRequired: 'Clé d’accès requise'
       },
+      aboutPage: {
+        heroTag: 'À propos de StudioPH',
+        heroTitle: 'Créer une Photographie Intemporelle',
+        heroSubtitle: 'Nous capturons des histoires avec une esthétique élégante et moderne. Des mariages aux portraits, notre travail allie art et précision.',
+        exploreWork: 'Découvrir Notre Travail',
+        ourStory: 'Notre Histoire',
+        storyP1: "Depuis plus d'une décennie, notre équipe se consacre à raconter des histoires authentiques à travers des images puissantes. Chaque cadre est soigneusement composé pour honorer vos moments.",
+        storyP2: "Nous combinons l'excellence technique avec un style visuel raffiné pour livrer des photographies qui se sentent à la fois intimes et iconiques.",
+        feature1Title: 'Qualité éditoriale',
+        feature1Desc: 'Esthétique moderne et épurée avec couleurs et lumière méticuleuses.',
+        feature2Title: 'Collaboration centrée client',
+        feature2Desc: 'Séances guidées adaptées à votre histoire et votre confort.',
+        feature3Title: "Livraison d'archives",
+        feature3Desc: "Fichiers haute résolution, gestion des couleurs prêts pour l'impression et le web.",
+        valuesTitle: 'Ce qui nous guide',
+        valuesSubtitle: 'Quatre piliers derrière tout ce que nous créons',
+        pillarPassion: 'Passion',
+        pillarPassionDesc: 'Émotion réelle, narration authentique et amour du métier.',
+        pillarConnection: 'Connexion',
+        pillarConnectionDesc: "Nous écoutons d'abord pour comprendre votre histoire et votre vision.",
+        pillarExcellence: 'Excellence',
+        pillarExcellenceDesc: "Qualité qui tient aujourd'hui, demain et dans les années à venir.",
+        pillarCraft: 'Artisanat',
+        pillarCraftDesc: 'Composition réfléchie, éclairage et post-production.',
+        ctaTitle: 'Prêt à travailler ensemble ?',
+        ctaSubtitle: 'Donnons vie à votre vision avec une séance adaptée à vous.',
+        ctaButton: 'Réserver Votre Séance'
+      },
+      aboutPageServices: {
+        title: 'Nos Services Photographiques',
+        subtitle: 'Expériences sur mesure pour capturer chaque histoire magnifiquement',
+        items: {
+          weddingTitle: 'Mariages & Fiançailles',
+          weddingDesc: 'Narration élégante du "oui" au "je le veux".',
+          portraitsTitle: 'Portraits & Photos de Profil',
+          portraitsDesc: 'Portraits nets et confiants pour usage personnel ou professionnel.',
+          eventsTitle: 'Événements & Célébrations',
+          eventsDesc: 'Des rassemblements intimes aux grandes ouvertures, nous vous couvrons.',
+          fashionTitle: 'Mode & Éditorial',
+          fashionDesc: 'Visuels audacieux et créatifs pour marques et créateurs.',
+          lifestyleTitle: 'Style de Vie & Famille',
+          lifestyleDesc: 'Moments naturels capturés avec chaleur et style.',
+          productTitle: 'Produit & Marque',
+          productDesc: 'Visuels nets qui font briller vos produits.'
+        },
+        learnMore: 'En savoir plus'
+      },
       contactPage: {
         heroTag: 'Créons quelque chose de beau',
         title: 'Contact StudioPH',
@@ -276,7 +316,7 @@ const resources = {
         phone: 'Téléphone',
         location: 'Localisation',
         follow: 'Suivre StudioPH',
-        quickNote: 'Vous préférez l’email ou le téléphone ? Utilisez les actions rapides ci-dessus — nous répondons généralement sous 24h.'
+        quickNote: "Vous préférez l'email ou le téléphone ? Utilisez les actions rapides ci-dessus — nous répondons généralement sous 24h."
       }
     }
   }

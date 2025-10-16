@@ -114,8 +114,8 @@ export default function AboutUs() {
               { icon: FiCamera, title: t('aboutPage.pillarCraft'), desc: t('aboutPage.pillarCraftDesc') }
             ].map((item, i) => (
               <motion.div key={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}
-                className="rounded-2xl p-5 md:p-6 border h-full"
-                style={{ backgroundColor: CARD, borderColor: `${ACCENT}25` }}
+                className="rounded-2xl p-5 md:p-6 border h-full shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+                style={{ background: "linear-gradient(180deg, #1A1A1A 0%, #151515 100%)", borderColor: `${ACCENT}25` }}
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${ACCENT}20` }}>
                   <item.icon className="w-6 h-6" style={{ color: ACCENT }} />
@@ -126,6 +126,49 @@ export default function AboutUs() {
                         ))}
                     </div>
                 </div>
+      </section>
+
+      {/* Services */}
+      <section className="py-12 sm:py-16 md:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{t('aboutPageServices.title')}</h2>
+            <p className="mt-3 text-base sm:text-lg" style={{ color: MUTED }}>{t('aboutPageServices.subtitle')}</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {[
+              { title: t('aboutPageServices.items.weddingTitle'), desc: t('aboutPageServices.items.weddingDesc'), icon: FiHeart },
+              { title: t('aboutPageServices.items.portraitsTitle'), desc: t('aboutPageServices.items.portraitsDesc'), icon: FiUsers },
+              { title: t('aboutPageServices.items.eventsTitle'), desc: t('aboutPageServices.items.eventsDesc'), icon: FiAward },
+              { title: t('aboutPageServices.items.fashionTitle'), desc: t('aboutPageServices.items.fashionDesc'), icon: FiCamera },
+              { title: t('aboutPageServices.items.lifestyleTitle'), desc: t('aboutPageServices.items.lifestyleDesc'), icon: FiCamera },
+              { title: t('aboutPageServices.items.productTitle'), desc: t('aboutPageServices.items.productDesc'), icon: FiAward },
+            ].map((s, i) => (
+              <motion.div
+                key={i}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                className="relative rounded-2xl border overflow-hidden group"
+                style={{ backgroundColor: CARD, borderColor: `${ACCENT}25` }}
+              >
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: `radial-gradient(800px circle at 0% 0%, ${ACCENT}14, transparent 40%)` }} />
+                <div className="p-6 md:p-7 relative">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: `${ACCENT}1A`, border: `1px solid ${ACCENT}33` }}>
+                    <s.icon className="w-5 h-5" style={{ color: ACCENT }} />
+                  </div>
+                  <h3 className="text-lg font-semibold">{s.title}</h3>
+                  <p className="text-sm mt-1.5" style={{ color: MUTED }}>{s.desc}</p>
+                  <div className="mt-4 inline-flex items-center gap-2 text-xs font-medium" style={{ color: ACCENT }}>
+                    <span>{t('aboutPageServices.learnMore')}</span>
+                    <FiArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* CTA */}
