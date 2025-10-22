@@ -34,6 +34,7 @@
     "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
     "seed": "^0.4.4",
+    "serverless-http": "^3.2.0",
     "streamifier": "^0.1.1"
   }
 }
