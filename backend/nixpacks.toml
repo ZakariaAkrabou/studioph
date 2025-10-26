@@ -1,0 +1,8 @@
+[phases.setup]
+npm-version = 18
+
+[phases.install]
+cmds = ["cd backend && npm install"]
+
+[start]
+cmd = "cd backend && node app.js"
