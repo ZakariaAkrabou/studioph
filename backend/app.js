@@ -33,7 +33,7 @@ if (!process.env.REFRESH_TOKEN_SECRET) {
 
 
 
-const allowlist = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173')
+const allowlist = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'https://studioph.netlify.app/')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);

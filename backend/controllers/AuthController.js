@@ -21,7 +21,7 @@ exports.registerAdmin = async (req, res) => {
         const verificationToken = admin.generateVerificationToken();
         await admin.save();
 
-        const frontendBase = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173').trim();
+        const frontendBase = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS?.split(',')[0] || 'https://studioph.netlify.app/').trim();
         const verifyUrl = `${frontendBase.replace(/\/+$/, '')}/auth/verify/${verificationToken}`;
         await sendEmail(email, "Verify Your Admin Account", `<p>Click here to verify: <a href="${verifyUrl}">${verifyUrl}</a></p>`);
 
@@ -102,9 +102,7 @@ exports.loginAdmin = async (req, res) => {
       sameSite,
       path: '/',
     };
-    // Access token: short-lived, HttpOnly cookie
     res.cookie('access_token', token, { ...cookieOpts, maxAge: 15 * 60 * 1000 });
-    // Refresh token: longer-lived, HttpOnly cookie
     res.cookie('refresh_token', refreshToken, { ...cookieOpts, maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     res.json({
@@ -145,7 +143,7 @@ exports.forgotPassword = async (req, res) => {
         const resetToken = admin.generatePasswordResetToken();
         await admin.save();
 
-        const frontendBase = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173').trim();
+        const frontendBase = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS?.split(',')[0] || 'https://studioph.netlify.app/').trim();
         const resetUrl = `${frontendBase.replace(/\/+$/, '')}/auth/reset-password/${resetToken}`;
         await sendEmail(admin.email, "Password Reset", `<p>Click to reset password: <a href="${resetUrl}">${resetUrl}</a></p>`);
 
