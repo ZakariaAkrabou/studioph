@@ -62,13 +62,11 @@ const { errorMiddleware } = require('./middlewares/errorMiddleware');
 app.use(errorMiddleware);
 
 
-if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
-  const PORT = process.env.PORT || 3000;
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+const PORT = process.env.PORT || 3000;
+connectDB().then(() => {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
   });
-}
+});
 
 module.exports = app;
