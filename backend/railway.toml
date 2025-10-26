@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd backend && npm install"
+startCommand = "node backend/app.js"
+
+[deploy]
+numReplicas = 1
