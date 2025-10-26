@@ -1,12 +1,23 @@
-# Backend Deployment Guide
+# StudioPH Backend Deployment Guide
 
-## Environment Variables Required
+## Docker Deployment
 
-Create a `.env` file in the backend directory with the following variables:
+### Prerequisites
+- Docker and Docker Compose installed
+- MongoDB database (local or cloud)
+- Cloudinary account for image storage
 
-```env
-# Database Configuration
-DB_CONNECTION_STRING=mongodb://localhost:27017/studioph
+### Environment Variables
+Create a `.env.production` file with the following variables:
+
+```bash
+# Server Configuration
+NODE_ENV=production
+PORT=3000
+
+# Database
+DB_CONNECTION_STRING=mongodb://localhost:27017/studioph_production
+# For MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/studioph_production
 
 # JWT Configuration
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -17,26 +28,18 @@ CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
 CLOUDINARY_API_KEY=your-cloudinary-api-key
 CLOUDINARY_API_SECRET=your-cloudinary-api-secret
 
-# Frontend Configuration
-FRONTEND_URL=http://localhost:5173
-FRONTEND_URLS=http://localhost:5173,https://yourdomain.com
+# CORS Configuration
+FRONTEND_URL=https://your-frontend-domain.com
+# For multiple frontend URLs, use comma-separated values:
+# FRONTEND_URLS=https://your-frontend-domain.com,https://www.your-frontend-domain.com
 
-# Upload Configuration
-MAX_UPLOAD_SIZE_BYTES=5242880
-
-# Server Configuration
-PORT=3000
-NODE_ENV=production
+# Request Configuration
 BODY_LIMIT=1mb
 ```
 
-## Docker Deployment
+### Deployment Commands
 
-### Option 1: Using Docker Compose (Recommended)
-
-1. Copy the environment variables to a `.env` file
-2. Run the following commands:
-
+#### Using Docker Compose (Recommended)
 ```bash
 # Build and start the container
 docker-compose up -d
@@ -48,8 +51,7 @@ docker-compose logs -f
 docker-compose down
 ```
 
-### Option 2: Using Docker directly
-
+#### Using Docker directly
 ```bash
 # Build the image
 docker build -t studioph-backend .
@@ -58,41 +60,39 @@ docker build -t studioph-backend .
 docker run -d \
   --name studioph-backend \
   -p 3000:3000 \
-  --env-file .env \
+  --env-file .env.production \
+  -v uploads_data:/app/uploads \
   studioph-backend
-
-# View logs
-docker logs -f studioph-backend
-
-# Stop the container
-docker stop studioph-backend
-docker rm studioph-backend
 ```
 
-## Health Check
-
+### Health Check
 The application includes a health check endpoint at `/health` that returns:
-- Status: OK
-- Timestamp
-- Uptime
+```json
+{
+  "status": "OK",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "uptime": 123.456
+}
+```
 
-## Production Considerations
+### Production Optimizations
 
-1. **Security**: The container runs as a non-root user (`appuser`)
-2. **Health Checks**: Built-in health checks for container orchestration
-3. **File Uploads**: Uploads are stored in a Docker volume for persistence
-4. **Environment Variables**: All sensitive data should be passed via environment variables
-5. **CORS**: Configure `FRONTEND_URLS` for your production frontend domains
+1. **Security**: The container runs as a non-root user
+2. **Performance**: Uses Alpine Linux for smaller image size
+3. **Caching**: Optimized layer caching for faster builds
+4. **Health Monitoring**: Built-in health checks
+5. **Volume Management**: Persistent storage for uploads
 
-## Troubleshooting
+### Troubleshooting
 
-1. **Container won't start**: Check environment variables are set correctly
-2. **Database connection issues**: Verify `DB_CONNECTION_STRING` is correct
-3. **File upload issues**: Check Cloudinary credentials and upload limits
-4. **CORS errors**: Update `FRONTEND_URLS` with your frontend domain
+1. **Container won't start**: Check environment variables and database connection
+2. **Health check fails**: Ensure the application is listening on port 3000
+3. **Upload issues**: Verify the uploads volume is properly mounted
+4. **CORS errors**: Check FRONTEND_URL configuration
 
-## Monitoring
-
-- Health check endpoint: `GET /health`
-- Container logs: `docker logs studioph-backend`
-- Container status: `docker ps`
+### Scaling
+For production scaling, consider:
+- Using a reverse proxy (nginx)
+- Load balancing multiple container instances
+- Database clustering
+- CDN for static assets

@@ -52,7 +52,7 @@ app.use(cors({
 app.use(bodyParser.json({ limit: process.env.BODY_LIMIT || '1mb' }));
 app.use(cookieParser());
 
-
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ 
     status: "OK", 
