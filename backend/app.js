@@ -31,17 +31,26 @@ if (!process.env.REFRESH_TOKEN_SECRET) {
   console.warn("Refresh token secret (REFRESH_TOKEN_SECRET) is not set. You are using access tokens only.");
 }
 
+const normalizeOrigin = (value) => {
+  if (!value) return value;
+  try {
+    const url = new URL(value);
+    return `${url.protocol}//${url.host}`;
+  } catch (_e) {
+    return value.replace(/\/$/, '');
+  }
+};
 
-
-const allowlist = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173')
+const allowlist = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'https://studioph.netlify.app')
   .split(',')
-  .map((s) => s.trim())
+  .map((s) => normalizeOrigin(s.trim()))
   .filter(Boolean);
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true); 
-    if (allowlist.includes(origin)) {
+    if (!origin) return callback(null, true);
+    const normalized = normalizeOrigin(origin);
+    if (allowlist.includes(normalized)) {
       return callback(null, true);
     }
     return callback(new Error('Not allowed by CORS'));
