@@ -52,6 +52,15 @@ app.use(cors({
 app.use(bodyParser.json({ limit: process.env.BODY_LIMIT || '1mb' }));
 app.use(cookieParser());
 
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ 
+    status: "OK", 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 app.use("/auth", userRoutes);
 app.use("/category", categoryRoutes);
 app.use("/portfolio", portfolioRoutes);
