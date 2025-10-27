@@ -12,7 +12,7 @@ const getCorsOptions = () => {
   const allowedOrigins = [
     'http://localhost:3000',
     'https://studioph.netlify.app',
-    'https://studiobackend-wf68me8p.b4a.run'
+    'https://studiobackend-v7qhxqps.b4a.run'
   ];
 
   if (process.env.FRONTEND_URL) {
