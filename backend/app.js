@@ -41,22 +41,43 @@ const normalizeOrigin = (value) => {
   }
 };
 
-const allowlist = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'https://studioph.netlify.app')
-  .split(',')
-  .map((s) => normalizeOrigin(s.trim()))
-  .filter(Boolean);
+
+const allowedOrigins = [
+  'https://studioph.netlify.app',
+  'http://localhost:5173',  
+  'http://localhost:3000', 
+  process.env.FRONTEND_URL,
+  ...(process.env.FRONTEND_URLS ? process.env.FRONTEND_URLS.split(',') : [])
+].filter(Boolean).map(url => {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.origin;
+  } catch (e) {
+    console.warn(`Invalid URL in CORS configuration: ${url}`);
+    return null;
+  }
+}).filter(Boolean);
+
+console.log('Allowed CORS origins:', allowedOrigins);
+
 
 app.use(cors({
   origin: function(origin, callback) {
     if (!origin) return callback(null, true);
-    const normalized = normalizeOrigin(origin);
-    if (allowlist.includes(normalized)) {
+    
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+    
+    console.warn(`CORS blocked: ${origin} not in allowed origins`);
     return callback(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
+
+app.options('*', cors());
 
 app.use(bodyParser.json({ limit: process.env.BODY_LIMIT || '1mb' }));
 app.use(cookieParser());
