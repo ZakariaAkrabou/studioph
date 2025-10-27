@@ -8,8 +8,6 @@ WORKDIR /app
 # Copy package files first for better layer caching
 COPY package*.json ./
 
-# Install dependencies with optimizations
-# Use npm install instead of npm ci to handle lock file sync issues
 RUN npm install --only=production --no-audit --no-fund && \
     npm cache clean --force
 
