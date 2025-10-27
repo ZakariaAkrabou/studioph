@@ -11,8 +11,7 @@ const normalizeOrigin = (value) => {
 const getCorsOptions = () => {
   const allowedOrigins = [
     'http://localhost:3000',
-    'https://studioph.netlify.app',
-    'https://studiobackend-v7qhxqps.b4a.run'
+    'https://studioph.netlify.app'
   ];
 
   if (process.env.FRONTEND_URL) {
