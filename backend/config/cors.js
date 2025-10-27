@@ -11,6 +11,7 @@ const normalizeOrigin = (value) => {
 const getCorsOptions = () => {
   const allowedOrigins = [
     'http://localhost:3000',
+    'http://localhost:5173', // Vite dev server
     'https://studioph.netlify.app'
   ];
 
@@ -21,6 +22,8 @@ const getCorsOptions = () => {
       .filter(Boolean);
     allowedOrigins.push(...envOrigins);
   }
+  
+  console.log('Allowed CORS origins:', allowedOrigins);
 
   return {
     origin: function (origin, callback) {
