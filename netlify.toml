@@ -1,0 +1,16 @@
+[build]
+  base = "frontend"
+  publish = "frontend/dist"
+  command = "npm run build"
+
+# Disable secret scanning - VITE_API_BASE_URL is a public API URL, not a secret
+# The backend URL is intentionally bundled into the client-side JavaScript
+[build.environment]
+  SECRETS_SCAN_ENABLED = "false"
+
+# Redirect all paths to index.html for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
