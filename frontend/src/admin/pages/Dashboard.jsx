@@ -14,6 +14,8 @@ export default function Dashboard() {
     clientSpaces: spaces?.length || 0,
   }), [categories, portfolios, spaces]);
 
+  // Removed monthly deltas; using quick actions instead
+
   const recentActivity = useMemo(() => {
     const actionFromDates = (createdAt, updatedAt) => {
       if (!createdAt && !updatedAt) return 'performed an action on';
@@ -71,10 +73,7 @@ export default function Dashboard() {
               </svg>
             </div>
           </div>
-          <div className="mt-4">
-            <span className="text-sm text-green-600 font-medium">+2.5%</span>
-            <span className="text-sm text-gray-500 ml-1">from last month</span>
-          </div>
+          
         </div>
 
         {/* Portfolio Items Card */}
@@ -90,10 +89,7 @@ export default function Dashboard() {
               </svg>
             </div>
           </div>
-          <div className="mt-4">
-            <span className="text-sm text-green-600 font-medium">+12.3%</span>
-            <span className="text-sm text-gray-500 ml-1">from last month</span>
-          </div>
+          
         </div>
 
         {/* Client Spaces Card */}
@@ -109,10 +105,7 @@ export default function Dashboard() {
               </svg>
             </div>
           </div>
-          <div className="mt-4">
-            <span className="text-sm text-green-600 font-medium">+8.1%</span>
-            <span className="text-sm text-gray-500 ml-1">from last month</span>
-          </div>
+          
         </div>
       </div>
 

@@ -124,7 +124,10 @@ const resources = {
         verifying: 'Verifying access key...',
         loading: 'Loading galleries...',
         yourCollection: 'Your Photo Collection',
-        accessKeyRequired: 'Access Key Required'
+        accessKeyRequired: 'Access Key Required',
+        photographerLabel: 'Photographer',
+        photosCount_one: '{{count}} photo',
+        photosCount_other: '{{count}} photos'
       },
       contactPage: {
         heroTag: 'Let’s make something beautiful',
@@ -234,7 +237,10 @@ const resources = {
         verifying: 'Vérification de la clé...',
         loading: 'Chargement des galeries...',
         yourCollection: 'Votre collection de photos',
-        accessKeyRequired: 'Clé d’accès requise'
+        accessKeyRequired: 'Clé d’accès requise',
+        photographerLabel: 'Photographe',
+        photosCount_one: '{{count}} photo',
+        photosCount_other: '{{count}} photos'
       },
       aboutPage: {
         heroTag: 'À propos de StudioPH',
