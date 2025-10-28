@@ -52,7 +52,7 @@ const SkeletonLoader = () => (
 );
 
 // Optimized image component with Cloudinary transformations
-const OptimizedImage = ({ src, alt, className = "", size = "medium" }) => {
+const OptimizedImage = ({ src, alt, className = "", size = "medium", priority = false }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
@@ -81,6 +81,16 @@ const OptimizedImage = ({ src, alt, className = "", size = "medium" }) => {
 
   const optimizedSrc = getOptimizedUrl(src, size);
 
+  const getSrcSet = useCallback((url) => {
+    if (!url || !url.includes('cloudinary')) return undefined;
+    const widths = [400, 600, 800, 1200, 1600];
+    const toW = (w) => url.replace('/upload/', `/upload/w_${w},c_fill,f_auto,q_auto/`);
+    return widths.map((w) => `${toW(w)} ${w}w`).join(', ');
+  }, []);
+
+  const srcSet = getSrcSet(src);
+  const sizes = '(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw';
+
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {!loaded && !error && (
@@ -97,6 +107,10 @@ const OptimizedImage = ({ src, alt, className = "", size = "medium" }) => {
           src={optimizedSrc}
           alt={alt}
           loading="lazy"
+          decoding="async"
+          fetchpriority={priority ? 'high' : 'low'}
+          srcSet={srcSet}
+          sizes={srcSet ? sizes : undefined}
           onLoad={handleLoad}
           onError={handleError}
           className={`w-full h-full object-cover rounded-2xl transition-all duration-500 ${
@@ -484,6 +498,7 @@ const Gallery = () => {
                           alt={photo.title}
                           className="w-full h-full"
                           size="medium"
+                          priority={index < 4}
                         />
                         
                         {/* Elegant Hover Overlay */}

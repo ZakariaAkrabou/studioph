@@ -54,14 +54,6 @@ exports.createPortfolio = async (req, res) => {
         message: "Something went wrong",
         error: err.message,
       });
-
-    const existingPortfolio = await Portfolio.findOne({ title });
-    if (existingPortfolio) {
-      return res.status(400).json({
-        success: false,
-        message: "A portfolio with this title already exists",
-      });
-    }
   }
 };
 

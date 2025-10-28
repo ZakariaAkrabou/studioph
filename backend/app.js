@@ -41,7 +41,7 @@ const normalizeOrigin = (value) => {
   }
 };
 
-const allowlist = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'https://studioph.netlify.app')
+const allowlist = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173/')
   .split(',')
   .map((s) => normalizeOrigin(s.trim()))
   .filter(Boolean);
